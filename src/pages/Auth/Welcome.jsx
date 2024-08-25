@@ -1,6 +1,7 @@
 import { useNavigate, Link } from "react-router-dom";
 import styled from "styled-components";
 
+// 컨테이너
 const Container = styled.div`
   display: flex;
   flex-direction: column;
@@ -8,14 +9,14 @@ const Container = styled.div`
   justify-content: center;
   height: 100%;
   background-color: #fff;
-  flex: 0.3;
 `;
 
-const LogoContainer = styled.section`
+// 로고 섹션
+const LogoSection = styled.section`
   display: flex;
+  flex: 0.8;
   justify-content: center;
   align-items: center;
-  flex: 0.8;
 `;
 
 const Logo = styled.div`
@@ -33,14 +34,15 @@ const LogoText = styled.p`
   color: #000;
 `;
 
-const LoginLinkContainer = styled.section`
+// 로그인 링크 섹션
+const LinkSection = styled.section`
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
 `;
 
-const LoginLink = styled.p`
+const LoginLinkText = styled.p`
   margin-top: 10px;
   color: #999;
   font-size: 14px;
@@ -52,6 +54,7 @@ const LoginLink = styled.p`
   }
 `;
 
+// 공통 버튼 스타일
 const Button = styled.button`
   width: 80%;
   max-width: 300px;
@@ -62,38 +65,32 @@ const Button = styled.button`
   border: none;
   border-radius: 25px;
   cursor: pointer;
-
-  &.start {
-    background-color: #1e88e5;
-  }
-
-  &.line {
-    background-color: #00c300;
-  }
+  background-color: ${({ variant }) => (variant === "line" ? "#00c300" : "#1e88e5")};
 `;
 
 const Welcome = () => {
   const navigate = useNavigate();
 
-  const onNavigate = (path) => {
+  const handleNavigate = (path) => {
     navigate(path);
   };
+
   return (
     <Container>
-      <LogoContainer>
+      <LogoSection>
         <Logo>
           <LogoText>로고</LogoText>
         </Logo>
-      </LogoContainer>
-      <LoginLinkContainer>
-        <LoginLink>
+      </LogoSection>
+      <LinkSection>
+        <LoginLinkText>
           이미 아이디가 있으신가요? <Link to="/login">로그인 하기</Link>
-        </LoginLink>
-        <Button className="start" onClick={() => onNavigate("/signup")}>
+        </LoginLinkText>
+        <Button variant="start" onClick={() => handleNavigate("/signup")}>
           시작하기
         </Button>
-        <Button className="line">LINE 간편로그인</Button>
-      </LoginLinkContainer>
+        <Button variant="line">LINE 간편로그인</Button>
+      </LinkSection>
     </Container>
   );
 };

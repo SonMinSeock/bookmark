@@ -1,26 +1,42 @@
-import { useState } from "react";
 import styled from "styled-components";
-import { FaCalendarAlt } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { FaArrowLeft, FaCalendarAlt } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { DateRange } from "react-date-range";
 import Modal from "react-modal";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
 
-Modal.setAppElement("#root");
-
 const Container = styled.div`
-  margin-top: 40px;
   padding: 16px;
-  padding-bottom: 80px;
+  background-color: #fff;
+  min-height: 100vh;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+`;
+
+const Header = styled.header`
+  display: flex;
+  align-items: center;
+  padding-bottom: 16px;
+`;
+
+const BackButton = styled.button`
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
 `;
 
 const SearchBox = styled.div`
   background-color: white;
   padding: 16px;
   border-radius: 12px;
-  margin-bottom: 16px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
@@ -41,13 +57,11 @@ const SearchInput = styled.input`
 
 const DateBox = styled.div`
   display: flex;
-  flex-direction: column;
   align-items: center;
   padding: 12px;
   background-color: #f0f0f0;
   border-radius: 8px;
   color: #aaa;
-  position: relative;
 `;
 
 const DateDisplay = styled.div`
@@ -59,87 +73,17 @@ const DateDisplay = styled.div`
   cursor: pointer;
 `;
 
-const TagContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
-`;
-
-const TagRow = styled.div`
-  display: flex;
-  gap: 1rem;
-`;
-
-const Tag = styled.div`
-  background-color: #e0e0e0;
-  padding: 8px 12px;
-  border-radius: 20px;
-  font-size: 13px;
-  color: #333;
-  width: 89px;
+const Button = styled.button`
+  background-color: #007aff;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  padding: 16px 0;
+  font-size: 16px;
   font-weight: bold;
-  text-align: center;
-`;
-
-const Guide = styled.div`
-  background-color: white;
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin-bottom: 16px;
-`;
-
-const ImagePlaceholder = styled.div`
+  cursor: pointer;
   width: 100%;
-  height: 150px;
-  background-color: #e0e0e0;
-  border-radius: 8px;
-  margin-bottom: 12px;
-`;
-
-const Title = styled.h2`
-  font-size: 18px;
-  font-weight: bold;
-  margin: 0;
-  margin-bottom: 8px;
-`;
-
-const Subtitle = styled.p`
-  font-size: 14px;
-  font-weight: bold;
-  color: #aaa;
-  margin: 0;
-  margin-bottom: 12px;
-`;
-
-const DescriptionWrapper = styled.div`
-  position: relative;
-`;
-
-const Description = styled.p`
-  font-size: 14px;
-  line-height: 22px;
-  color: #333;
-  margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  padding-right: 60px;
-`;
-
-const MoreButton = styled(Link)`
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  background: white;
-  padding-left: 4px;
-  color: #007aff;
-  text-decoration: none;
-  font-weight: bold;
+  margin-top: auto; /* 버튼을 하단에 배치 */
 `;
 
 const CloseButton = styled.button`
@@ -155,22 +99,7 @@ const CloseButton = styled.button`
   font-weight: bold;
 `;
 
-const GUIDES = [
-  {
-    id: 1,
-    title: "부산 여행",
-    subTitle: "부산, 2024.08.16",
-    text: "광안리 해수욕장은 광안대교와 함께하는 야경이 유명합니다. 밤이 되면 화려하게 빛나는 광안대교와 함께하는 바다 풍경은 부산 여행의 하이라이트 중 하나입니다.",
-  },
-  {
-    id: 2,
-    title: "전북 여행",
-    subTitle: "전북, 2024.08.24 ",
-    text: "전북 전주의 한옥마을은 전통과 현대가 어우러진 고즈넉한 풍경을 자랑합니다. 골목을 따라 걷다 보면, 전통 한옥의 멋스러움과 맛집들을 즐길 수 있습니다.",
-  },
-];
-
-const Home = () => {
+const GuideCreate = () => {
   const [showDateRange, setShowDateRange] = useState(false);
   const [selectedRange, setSelectedRange] = useState([
     {
@@ -179,6 +108,11 @@ const Home = () => {
       key: "selection",
     },
   ]);
+  const navigate = useNavigate();
+
+  const handleNext = () => {
+    navigate("/guide/title");
+  };
 
   const handleDateSelect = (ranges) => {
     setSelectedRange([ranges.selection]);
@@ -197,6 +131,11 @@ const Home = () => {
 
   return (
     <Container>
+      <Header>
+        <BackButton onClick={() => navigate(-1)}>
+          <FaArrowLeft />
+        </BackButton>
+      </Header>
       <SearchBox>
         <SearchInput placeholder="어디로 떠나세요?" />
         <DateBox>
@@ -206,7 +145,6 @@ const Home = () => {
           </DateDisplay>
         </DateBox>
       </SearchBox>
-
       <Modal
         isOpen={showDateRange}
         onRequestClose={() => setShowDateRange(false)}
@@ -241,34 +179,9 @@ const Home = () => {
         />
         <CloseButton onClick={() => setShowDateRange(false)}>닫기</CloseButton>
       </Modal>
-
-      <TagContainer>
-        <TagRow>
-          <Tag>태그 1</Tag>
-          <Tag>태그 2</Tag>
-          <Tag>태그 3</Tag>
-        </TagRow>
-        <TagRow>
-          <Tag>태그 4</Tag>
-          <Tag>태그 5</Tag>
-        </TagRow>
-      </TagContainer>
-
-      {GUIDES.map((guide) => (
-        <Guide key={guide.id}>
-          <ImagePlaceholder />
-          <Title>{guide.title}</Title>
-          <Subtitle>{guide.subTitle}</Subtitle>
-          <DescriptionWrapper>
-            <Description>{guide.text}</Description>
-            <MoreButton to={`guide/${guide.id}`} state={guide}>
-              더보기
-            </MoreButton>
-          </DescriptionWrapper>
-        </Guide>
-      ))}
+      <Button onClick={handleNext}>다음</Button>
     </Container>
   );
 };
 
-export default Home;
+export default GuideCreate;

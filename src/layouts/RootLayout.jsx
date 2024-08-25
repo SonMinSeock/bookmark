@@ -5,16 +5,13 @@ import { IoIosAddCircleOutline } from "react-icons/io";
 import { IoHomeOutline } from "react-icons/io5";
 
 const LayoutContainer = styled.div`
-  height: 100%;
+  height: ${location.pathname === "/welcome" ? "100vh" : null};
+
   @media (min-width: 393px) {
     max-width: 393px;
     margin: auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 데스크탑에서 가볍게 그림자를 추가하여 입체감 부여 */
   }
-`;
-
-const Content = styled.div`
-  flex: 1;
-  overflow-y: auto;
 `;
 
 const NavBar = styled.div`
@@ -39,6 +36,12 @@ const NavIcon = styled.div`
   align-items: center;
   color: #333;
   cursor: pointer;
+  &:hover {
+    color: #007aff; /* 아이콘에 호버 시 약간의 색상 변경으로 인터랙션 추가 */
+  }
+  .selected {
+    color: #007aff;
+  }
 `;
 
 const RootLayout = () => {
@@ -59,14 +62,12 @@ const RootLayout = () => {
 
   return (
     <LayoutContainer>
-      <Content>
-        <Outlet />
-      </Content>
+      <Outlet />
       {showNavBar && (
         <NavBar>
           <NavIcon>
             {location.pathname === "/" ? (
-              <FaHome size={24} />
+              <FaHome size={24} className="selected" />
             ) : (
               <IoHomeOutline size={24} onClick={() => handleNavigate("/")} />
             )}
@@ -76,7 +77,7 @@ const RootLayout = () => {
           </NavIcon>
           <NavIcon>
             {location.pathname.startsWith("/bookmark") ? (
-              <FaBookmark size={24} />
+              <FaBookmark size={24} className="selected" />
             ) : (
               <FaRegBookmark size={24} onClick={() => handleNavigate("/bookmark")} />
             )}

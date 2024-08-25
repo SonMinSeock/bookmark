@@ -1,17 +1,17 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Welcome from "../pages/Welcome";
+import Welcome from "../pages/Auth/Welcome";
 import RootLayout from "../layouts/RootLayout";
-import Login from "../pages/Login";
-import Signup from "../pages/Signup";
+import Login from "../pages/Auth/Login";
+import Signup from "../pages/Auth/Signup";
 import Home from "../pages/Home";
-import Guide from "../pages/Guide";
-import GuideCreate from "../pages/GuideCreate";
-import GuideTitle from "../pages/GuideTitle";
-import GuideFinally from "../pages/GuideFinally";
-import BookMark from "../pages/BookMark";
-import BookMarkSelect from "../pages/BookMarkSelect";
-import MyGuideBooks from "../pages/MyGuideBooks";
-import MyGuideBookDetail from "../pages/MyGuideBookDetail";
+import Guide from "../pages/Guide/Guide";
+import GuideCreate from "../pages/Guide/GuideCreate";
+import GuideTitle from "../pages/Guide/GuideTitle";
+import GuideFinally from "../pages/Guide/GuideFinally";
+import BookMark from "../pages/BookMark/BookMark";
+import BookMarkSelect from "../pages/BookMark/BookMarkSelect";
+import MyGuideBooks from "../pages/Guide/MyGuideBooks";
+import MyGuideBookDetail from "../pages/Guide/MyGuideBookDetail";
 
 const AppRouter = () => {
   return (
