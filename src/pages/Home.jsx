@@ -136,10 +136,13 @@ const MoreButton = styled(Link)`
   right: 0;
   bottom: 0;
   background: white;
-  padding-left: 4px;
   color: #007aff;
   text-decoration: none;
   font-weight: bold;
+  border-bottom: 1px solid transparent; /* 기본 상태에서 투명한 border-bottom 추가 */
+  &:hover {
+    border-bottom: 1px solid #007aff; /* 호버 시, 색상만 변경하여 흔들림 현상 제거 */
+  }
 `;
 
 const CloseButton = styled.button`
