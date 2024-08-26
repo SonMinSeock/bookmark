@@ -24,7 +24,7 @@ const SearchBox = styled.div`
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
-const SearchInput = styled.input`
+const SearchSelect = styled.select`
   width: 100%;
   padding: 12px;
   font-size: 16px;
@@ -32,13 +32,12 @@ const SearchInput = styled.input`
   border: 1px solid #ddd;
   margin-bottom: 12px;
   background-color: #f0f0f0;
-  color: #aaa;
+  color: #333;
 
   &::placeholder {
     color: #aaa;
   }
 `;
-
 const DateBox = styled.div`
   display: flex;
   align-items: center;
@@ -203,7 +202,9 @@ const Home = () => {
   };
 
   const handleAreaInput = (event) => {
-    setArea(event.target.value);
+    const selectedArea = JSON.parse(event.target.value);
+    setArea(selectedArea);
+    console.log("Selected Area:", selectedArea); // 선택한 지역 객체를 출력
   };
 
   const fetchTravelData = async () => {
@@ -211,9 +212,10 @@ const Home = () => {
       apiKey: import.meta.env.VITE_AREA_TRAVLE,
     };
     try {
-      if (area.includes("서울")) {
+      if (area !== "") {
+        // 특정 지역이 선택되었는지 확인
         const response = await fetch(
-          `http://apis.data.go.kr/B551011/JpnService1/areaBasedList1?serviceKey=${apiConfig.apiKey}&numOfRows=10&pageNo=1&MobileOS=ETC&MobileApp=AppTest&listYN=Y&arrange=A&areaCode=1&_type=json`
+          `http://apis.data.go.kr/B551011/JpnService1/areaBasedList1?serviceKey=${apiConfig.apiKey}&numOfRows=10&pageNo=1&MobileOS=ETC&MobileApp=AppTest&listYN=Y&arrange=A&areaCode=${area.code}&_type=json`
         );
 
         const res = await response.json();
@@ -234,7 +236,26 @@ const Home = () => {
   return (
     <Container>
       <SearchBox>
-        <SearchInput placeholder="어디로 떠나세요?" onChange={handleAreaInput} value={area} />
+        <SearchSelect onChange={handleAreaInput} value={JSON.stringify(area)}>
+          <option value="">어디로 떠나세요?</option>
+          <option value={JSON.stringify({ code: 1, areaName: "서울특별시" })}>서울특별시</option>
+          <option value={JSON.stringify({ code: 2, areaName: "인천광역시" })}>인천광역시</option>
+          <option value={JSON.stringify({ code: 3, areaName: "대전광역시" })}>대전광역시</option>
+          <option value={JSON.stringify({ code: 4, areaName: "대구광역시" })}>대구광역시</option>
+          <option value={JSON.stringify({ code: 5, areaName: "광주광역시" })}>광주광역시</option>
+          <option value={JSON.stringify({ code: 6, areaName: "부산광역시" })}>부산광역시</option>
+          <option value={JSON.stringify({ code: 7, areaName: "울산광역시" })}>울산광역시</option>
+          <option value={JSON.stringify({ code: 8, areaName: "세종특별자치시" })}>세종특별자치시</option>
+          <option value={JSON.stringify({ code: 31, areaName: "경기도" })}>경기도</option>
+          <option value={JSON.stringify({ code: 32, areaName: "강원도" })}>강원도</option>
+          <option value={JSON.stringify({ code: 33, areaName: "충청북도" })}>충청북도</option>
+          <option value={JSON.stringify({ code: 34, areaName: "충청남도" })}>충청남도</option>
+          <option value={JSON.stringify({ code: 35, areaName: "경상북도" })}>경상북도</option>
+          <option value={JSON.stringify({ code: 36, areaName: "경상남도" })}>경상남도</option>
+          <option value={JSON.stringify({ code: 37, areaName: "전북특별자치도" })}>전북특별자치도</option>
+          <option value={JSON.stringify({ code: 38, areaName: "전라남도" })}>전라남도</option>
+          <option value={JSON.stringify({ code: 39, areaName: "제주특별자치도" })}>제주특별자치도</option>
+        </SearchSelect>
         <DateBox>
           <DateDisplay
             onClick={() => {
@@ -321,7 +342,7 @@ const Home = () => {
             ) : null}
           </ImagePlaceholder>
           <Title>{guide.title}</Title>
-          <Subtitle>{`${area}`}</Subtitle>
+          <Subtitle>{`${area.areaName}`}</Subtitle>
           <DescriptionWrapper>
             <Description>{guide.text}</Description>
             <MoreButton to={`guide/${guide.id}`} state={guide}>
