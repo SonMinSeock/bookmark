@@ -41,13 +41,11 @@ const SearchInput = styled.input`
 
 const DateBox = styled.div`
   display: flex;
-  flex-direction: column;
   align-items: center;
   padding: 12px;
   background-color: #f0f0f0;
   border-radius: 8px;
   color: #aaa;
-  position: relative;
 `;
 
 const DateDisplay = styled.div`
@@ -97,6 +95,10 @@ const ImagePlaceholder = styled.div`
   background-color: #e0e0e0;
   border-radius: 8px;
   margin-bottom: 12px;
+  & img {
+    width: 100%;
+    height: 100%;
+  }
 `;
 
 const Title = styled.h2`
@@ -139,9 +141,9 @@ const MoreButton = styled(Link)`
   color: #007aff;
   text-decoration: none;
   font-weight: bold;
-  border-bottom: 1px solid transparent; /* 기본 상태에서 투명한 border-bottom 추가 */
+  border-bottom: 1px solid transparent;
   &:hover {
-    border-bottom: 1px solid #007aff; /* 호버 시, 색상만 변경하여 흔들림 현상 제거 */
+    border-bottom: 1px solid #007aff;
   }
 `;
 
@@ -174,6 +176,8 @@ const GUIDES = [
 ];
 
 const Home = () => {
+  const [area, setArea] = useState("");
+  const [travels, setTravles] = useState(null);
   const [showDateRange, setShowDateRange] = useState(false);
   const [selectedRange, setSelectedRange] = useState([
     {
@@ -198,12 +202,45 @@ const Home = () => {
     }
   };
 
+  const handleAreaInput = (event) => {
+    setArea(event.target.value);
+  };
+
+  const fetchTravelData = async () => {
+    const apiConfig = {
+      apiKey: import.meta.env.VITE_AREA_TRAVLE,
+    };
+    try {
+      if (area.includes("서울")) {
+        const response = await fetch(
+          `http://apis.data.go.kr/B551011/JpnService1/areaBasedList1?serviceKey=${apiConfig.apiKey}&numOfRows=10&pageNo=1&MobileOS=ETC&MobileApp=AppTest&listYN=Y&arrange=A&areaCode=1&_type=json`
+        );
+
+        const res = await response.json();
+
+        if (res?.response?.body?.items?.item) {
+          setTravles(res.response.body.items.item);
+        } else {
+          console.error("No items found in the response");
+        }
+
+        console.log(res);
+      }
+    } catch (error) {
+      console.error("Error fetching travel data:", error);
+    }
+  };
+
   return (
     <Container>
       <SearchBox>
-        <SearchInput placeholder="어디로 떠나세요?" />
+        <SearchInput placeholder="어디로 떠나세요?" onChange={handleAreaInput} value={area} />
         <DateBox>
-          <DateDisplay onClick={() => setShowDateRange(true)}>
+          <DateDisplay
+            onClick={() => {
+              setShowDateRange(true);
+            }}
+          >
             <FaCalendarAlt style={{ marginRight: "8px" }} />
             {`${formatDateDisplay(selectedRange[0].startDate)} ~ ${formatDateDisplay(selectedRange[0].endDate)}`}
           </DateDisplay>
@@ -212,7 +249,10 @@ const Home = () => {
 
       <Modal
         isOpen={showDateRange}
-        onRequestClose={() => setShowDateRange(false)}
+        onRequestClose={async () => {
+          setShowDateRange(false);
+          await fetchTravelData();
+        }}
         style={{
           overlay: {
             backgroundColor: "rgba(0, 0, 0, 0.5)",
@@ -257,11 +297,31 @@ const Home = () => {
         </TagRow>
       </TagContainer>
 
-      {GUIDES.map((guide) => (
+      {/* {GUIDES.map((guide) => (
         <Guide key={guide.id}>
           <ImagePlaceholder />
           <Title>{guide.title}</Title>
           <Subtitle>{guide.subTitle}</Subtitle>
+          <DescriptionWrapper>
+            <Description>{guide.text}</Description>
+            <MoreButton to={`guide/${guide.id}`} state={guide}>
+              더보기
+            </MoreButton>
+          </DescriptionWrapper>
+        </Guide>
+      ))} */}
+
+      {travels?.map((guide) => (
+        <Guide key={guide.contentid}>
+          <ImagePlaceholder>
+            {guide.firstimage ? (
+              <img src={guide.firstimage} />
+            ) : guide.fistimage2 ? (
+              <img src={guide.firstimage2} />
+            ) : null}
+          </ImagePlaceholder>
+          <Title>{guide.title}</Title>
+          <Subtitle>{`${area}`}</Subtitle>
           <DescriptionWrapper>
             <Description>{guide.text}</Description>
             <MoreButton to={`guide/${guide.id}`} state={guide}>
