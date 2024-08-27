@@ -9,10 +9,11 @@ export function useInitialTravels() {
   });
 }
 
-export function useTravels(areaCode, tagType, selectedTag) {
+export function useTravels(areaCode, tagType, selectedTag, page = 1) {
   return useQuery({
-    queryKey: ["travels", areaCode, tagType, selectedTag],
-    queryFn: () => fetchTravelData(areaCode, tagType),
+    queryKey: ["travels", areaCode, tagType, selectedTag, page],
+    queryFn: () => fetchTravelData(areaCode, tagType, page),
     enabled: !!areaCode || !!selectedTag, // areaCode 또는 selectedTag가 변경될 때 실행
+    keepPreviousData: true, // 이전 데이터를 유지하면서 새로운 데이터를 불러옵니다.
   });
 }

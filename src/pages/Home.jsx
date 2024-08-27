@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import styled from "styled-components";
-import { FaCalendarAlt } from "react-icons/fa";
+import { FaCalendarAlt, FaArrowUp } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { DateRange } from "react-date-range";
 import Modal from "react-modal";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
 import { useInitialTravels, useTravels } from "../hooks/useTravelQuries";
+import { FaRegBookmark } from "react-icons/fa";
+import ClipLoader from "react-spinners/ClipLoader"; // 로딩 스피너 추가
 
 Modal.setAppElement("#root");
 
@@ -39,6 +41,7 @@ const SearchSelect = styled.select`
     color: #aaa;
   }
 `;
+
 const DateBox = styled.div`
   display: flex;
   align-items: center;
@@ -108,8 +111,18 @@ const ImagePlaceholder = styled.div`
   }
 `;
 
+const GuideContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  & .bookmark-icon:hover {
+    color: #007aff;
+    cursor: pointer;
+  }
+`;
+
 const Title = styled.h2`
-  font-size: 18px;
+  font-size: 14px;
   font-weight: bold;
   margin: 0;
   margin-bottom: 8px;
@@ -167,20 +180,28 @@ const CloseButton = styled.button`
   font-weight: bold;
 `;
 
-// const GUIDES = [
-//   {
-//     id: 1,
-//     title: "부산 여행",
-//     subTitle: "부산, 2024.08.16",
-//     text: "광안리 해수욕장은 광안대교와 함께하는 야경이 유명합니다. 밤이 되면 화려하게 빛나는 광안대교와 함께하는 바다 풍경은 부산 여행의 하이라이트 중 하나입니다.",
-//   },
-//   {
-//     id: 2,
-//     title: "전북 여행",
-//     subTitle: "전북, 2024.08.24 ",
-//     text: "전북 전주의 한옥마을은 전통과 현대가 어우러진 고즈넉한 풍경을 자랑합니다. 골목을 따라 걷다 보면, 전통 한옥의 멋스러움과 맛집들을 즐길 수 있습니다.",
-//   },
-// ];
+const ScrollToTopButton = styled.button`
+  position: fixed;
+  bottom: 70px; // 기존의 30px에서 70px로 변경하여 버튼을 더 위로 이동
+  right: 30px;
+  background-color: #007aff;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  cursor: pointer;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+
+  &:hover {
+    background-color: #005bbb;
+  }
+`;
 
 // 지역, 코드 이름구성된 객체
 const areaNames = {
@@ -222,16 +243,47 @@ const Home = () => {
       key: "selection",
     },
   ]);
-  const [selectedTag, setSelectedTag] = useState(null); // 태그 하나만 선택 가능하도록 수정
-  const [displayedTravels, setDisplayedTravels] = useState([]); // 표시할 여행 데이터 상태
+  const [selectedTag, setSelectedTag] = useState("모두");
+  const [displayedTravels, setDisplayedTravels] = useState([]);
+  const [page, setPage] = useState(1);
+  const [showScrollToTop, setShowScrollToTop] = useState(false);
+
+  const { data: initialTravels, isLoading: isInitialLoading, error: initialError } = useInitialTravels();
+  const {
+    data: travels,
+    isLoading,
+    error,
+    isFetching,
+  } = useTravels(area.code, tagTypes[selectedTag], selectedTag, page);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 300) {
+        setShowScrollToTop(true);
+      } else {
+        setShowScrollToTop(false);
+      }
+
+      if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 50) {
+        if (!isFetching && !isLoading) {
+          setPage((prevPage) => prevPage + 1);
+        }
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [isFetching, isLoading]);
+
+  const handleScrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const handleTagClick = (tag) => {
-    if (selectedTag === tag) {
-      setSelectedTag(null);
-      setDisplayedTravels([]); // 태그 비활성화 시 데이터 초기화
-    } else {
+    if (selectedTag !== tag) {
       setSelectedTag(tag);
-      setDisplayedTravels([]); // 새로운 태그 선택 시 데이터 초기화
+      setDisplayedTravels([]);
+      setPage(1); // 페이지도 초기화
     }
   };
 
@@ -253,22 +305,23 @@ const Home = () => {
   const handleAreaInput = (event) => {
     const selectedArea = JSON.parse(event.target.value);
     setArea(selectedArea);
+    setDisplayedTravels([]);
+    setPage(1);
   };
 
   const checkArea = (areaCode) => {
     return areaNames[areaCode] || "알 수 없는 지역";
   };
 
-  const { data: initialTravels, isLoading: isInitialLoading, error: initialError } = useInitialTravels();
-  const { data: travels, isLoading, error, refetch } = useTravels(area.code, tagTypes[selectedTag], selectedTag);
-
   useEffect(() => {
-    if (selectedTag !== null) {
-      refetch().then((result) => {
-        setDisplayedTravels(result.data || []); // 쿼리 실행 후 받은 데이터를 상태에 저장
-      });
+    if (page === 1) {
+      // 첫 페이지 요청 시에만 초기화하여 데이터 중복을 방지
+      setDisplayedTravels(travels || []);
+    } else if (travels && travels.length > 0) {
+      // 그 외의 페이지는 추가된 데이터를 병합
+      setDisplayedTravels((prevTravels) => [...prevTravels, ...travels]);
     }
-  }, [selectedTag, refetch]);
+  }, [page, travels]);
 
   return (
     <Container>
@@ -292,6 +345,12 @@ const Home = () => {
           </DateDisplay>
         </DateBox>
       </SearchBox>
+
+      {showScrollToTop && (
+        <ScrollToTopButton onClick={handleScrollToTop}>
+          <FaArrowUp />
+        </ScrollToTopButton>
+      )}
 
       <Modal
         isOpen={showDateRange}
@@ -350,7 +409,11 @@ const Home = () => {
         </TagRow>
       </TagContainer>
 
-      {isLoading && <div>Loading...</div>}
+      {(isInitialLoading || isLoading) && (
+        <div style={{ textAlign: "center", padding: "20px" }}>
+          <ClipLoader color="#007aff" size={50} />
+        </div>
+      )}
       {error && <div>Error: {error.message}</div>}
 
       {(displayedTravels.length > 0 ? displayedTravels : initialTravels)?.map((guide) => (
@@ -362,7 +425,10 @@ const Home = () => {
               <img src={guide.firstimage2} />
             ) : null}
           </ImagePlaceholder>
-          <Title>{guide.title}</Title>
+          <GuideContainer>
+            <Title>{guide.title}</Title>
+            <FaRegBookmark size={20} className="bookmark-icon" />
+          </GuideContainer>
           <Subtitle>{`${checkArea(guide.areacode)}`}</Subtitle>
           <DescriptionWrapper>
             <Description>{guide.text}</Description>

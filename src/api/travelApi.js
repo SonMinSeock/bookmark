@@ -1,6 +1,6 @@
 // src/api/travelApi.js
 
-export async function fetchTravelData(areaCode, tagType) {
+export async function fetchTravelData(areaCode, tagType, page = 1) {
   const apiConfig = {
     apiKey: import.meta.env.VITE_AREA_TRAVLE,
   };
@@ -8,8 +8,10 @@ export async function fetchTravelData(areaCode, tagType) {
   try {
     const areaCodeParam = areaCode ? `&areaCode=${areaCode}` : "";
     const typeParam = tagType ? `&contentTypeId=${tagType}` : ""; // 타입 코드 추가
+    const pageParam = `&pageNo=${page}`; // 페이지 번호를 추가
+
     const response = await fetch(
-      `http://apis.data.go.kr/B551011/JpnService1/areaBasedList1?serviceKey=${apiConfig.apiKey}&numOfRows=10&pageNo=1&MobileOS=ETC&MobileApp=AppTest&listYN=Y&arrange=A${areaCodeParam}${typeParam}&_type=json`
+      `http://apis.data.go.kr/B551011/JpnService1/areaBasedList1?serviceKey=${apiConfig.apiKey}&numOfRows=10${pageParam}&MobileOS=ETC&MobileApp=AppTest&listYN=Y&arrange=A${areaCodeParam}${typeParam}&_type=json`
     );
 
     const res = await response.json();
