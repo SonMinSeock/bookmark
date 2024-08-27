@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styled from "styled-components";
 import { FaCalendarAlt } from "react-icons/fa";
 import { Link } from "react-router-dom";
@@ -6,6 +6,7 @@ import { DateRange } from "react-date-range";
 import Modal from "react-modal";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
+import { useInitialTravels, useTravels } from "../hooks/useTravelQuries";
 
 Modal.setAppElement("#root");
 
@@ -70,14 +71,21 @@ const TagRow = styled.div`
 `;
 
 const Tag = styled.div`
-  background-color: #e0e0e0;
+  background-color: ${(props) => (props.selected ? "#007aff" : "#e0e0e0")};
+  color: ${(props) => (props.selected ? "white" : "#333")};
   padding: 8px 12px;
   border-radius: 20px;
-  font-size: 13px;
-  color: #333;
   width: 89px;
+  font-size: 13px;
   font-weight: bold;
   text-align: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+
+  &:hover {
+    background-color: ${(props) => (props.selected ? "#005bbb" : "#cce7ff")};
+    color: white;
+  }
 `;
 
 const Guide = styled.div`
@@ -159,24 +167,53 @@ const CloseButton = styled.button`
   font-weight: bold;
 `;
 
-const GUIDES = [
-  {
-    id: 1,
-    title: "부산 여행",
-    subTitle: "부산, 2024.08.16",
-    text: "광안리 해수욕장은 광안대교와 함께하는 야경이 유명합니다. 밤이 되면 화려하게 빛나는 광안대교와 함께하는 바다 풍경은 부산 여행의 하이라이트 중 하나입니다.",
-  },
-  {
-    id: 2,
-    title: "전북 여행",
-    subTitle: "전북, 2024.08.24 ",
-    text: "전북 전주의 한옥마을은 전통과 현대가 어우러진 고즈넉한 풍경을 자랑합니다. 골목을 따라 걷다 보면, 전통 한옥의 멋스러움과 맛집들을 즐길 수 있습니다.",
-  },
-];
+// const GUIDES = [
+//   {
+//     id: 1,
+//     title: "부산 여행",
+//     subTitle: "부산, 2024.08.16",
+//     text: "광안리 해수욕장은 광안대교와 함께하는 야경이 유명합니다. 밤이 되면 화려하게 빛나는 광안대교와 함께하는 바다 풍경은 부산 여행의 하이라이트 중 하나입니다.",
+//   },
+//   {
+//     id: 2,
+//     title: "전북 여행",
+//     subTitle: "전북, 2024.08.24 ",
+//     text: "전북 전주의 한옥마을은 전통과 현대가 어우러진 고즈넉한 풍경을 자랑합니다. 골목을 따라 걷다 보면, 전통 한옥의 멋스러움과 맛집들을 즐길 수 있습니다.",
+//   },
+// ];
+
+// 지역, 코드 이름구성된 객체
+const areaNames = {
+  1: "서울특별시",
+  2: "인천광역시",
+  3: "대전광역시",
+  4: "대구광역시",
+  5: "광주광역시",
+  6: "부산광역시",
+  7: "울산광역시",
+  8: "세종특별자치시",
+  31: "경기도",
+  32: "강원도",
+  33: "충청북도",
+  34: "충청남도",
+  35: "경상북도",
+  36: "경상남도",
+  37: "전북특별자치도",
+  38: "전라남도",
+  39: "제주특별자치도",
+};
+
+// 관광데이터 콘텐츠별 타입
+const tagTypes = {
+  모두: null,
+  관광지: 76,
+  문화시설: 78,
+  행사: 85,
+  음식점: 82,
+};
 
 const Home = () => {
   const [area, setArea] = useState("");
-  const [travels, setTravles] = useState(null);
   const [showDateRange, setShowDateRange] = useState(false);
   const [selectedRange, setSelectedRange] = useState([
     {
@@ -185,6 +222,18 @@ const Home = () => {
       key: "selection",
     },
   ]);
+  const [selectedTag, setSelectedTag] = useState(null); // 태그 하나만 선택 가능하도록 수정
+  const [displayedTravels, setDisplayedTravels] = useState([]); // 표시할 여행 데이터 상태
+
+  const handleTagClick = (tag) => {
+    if (selectedTag === tag) {
+      setSelectedTag(null);
+      setDisplayedTravels([]); // 태그 비활성화 시 데이터 초기화
+    } else {
+      setSelectedTag(tag);
+      setDisplayedTravels([]); // 새로운 태그 선택 시 데이터 초기화
+    }
+  };
 
   const handleDateSelect = (ranges) => {
     setSelectedRange([ranges.selection]);
@@ -204,57 +253,33 @@ const Home = () => {
   const handleAreaInput = (event) => {
     const selectedArea = JSON.parse(event.target.value);
     setArea(selectedArea);
-    console.log("Selected Area:", selectedArea); // 선택한 지역 객체를 출력
   };
 
-  const fetchTravelData = async () => {
-    const apiConfig = {
-      apiKey: import.meta.env.VITE_AREA_TRAVLE,
-    };
-    try {
-      if (area !== "") {
-        // 특정 지역이 선택되었는지 확인
-        const response = await fetch(
-          `http://apis.data.go.kr/B551011/JpnService1/areaBasedList1?serviceKey=${apiConfig.apiKey}&numOfRows=10&pageNo=1&MobileOS=ETC&MobileApp=AppTest&listYN=Y&arrange=A&areaCode=${area.code}&_type=json`
-        );
+  const checkArea = (areaCode) => {
+    return areaNames[areaCode] || "알 수 없는 지역";
+  };
 
-        const res = await response.json();
+  const { data: initialTravels, isLoading: isInitialLoading, error: initialError } = useInitialTravels();
+  const { data: travels, isLoading, error, refetch } = useTravels(area.code, tagTypes[selectedTag], selectedTag);
 
-        if (res?.response?.body?.items?.item) {
-          setTravles(res.response.body.items.item);
-        } else {
-          console.error("No items found in the response");
-        }
-
-        console.log(res);
-      }
-    } catch (error) {
-      console.error("Error fetching travel data:", error);
+  useEffect(() => {
+    if (selectedTag !== null) {
+      refetch().then((result) => {
+        setDisplayedTravels(result.data || []); // 쿼리 실행 후 받은 데이터를 상태에 저장
+      });
     }
-  };
+  }, [selectedTag, refetch]);
 
   return (
     <Container>
       <SearchBox>
         <SearchSelect onChange={handleAreaInput} value={JSON.stringify(area)}>
           <option value="">어디로 떠나세요?</option>
-          <option value={JSON.stringify({ code: 1, areaName: "서울특별시" })}>서울특별시</option>
-          <option value={JSON.stringify({ code: 2, areaName: "인천광역시" })}>인천광역시</option>
-          <option value={JSON.stringify({ code: 3, areaName: "대전광역시" })}>대전광역시</option>
-          <option value={JSON.stringify({ code: 4, areaName: "대구광역시" })}>대구광역시</option>
-          <option value={JSON.stringify({ code: 5, areaName: "광주광역시" })}>광주광역시</option>
-          <option value={JSON.stringify({ code: 6, areaName: "부산광역시" })}>부산광역시</option>
-          <option value={JSON.stringify({ code: 7, areaName: "울산광역시" })}>울산광역시</option>
-          <option value={JSON.stringify({ code: 8, areaName: "세종특별자치시" })}>세종특별자치시</option>
-          <option value={JSON.stringify({ code: 31, areaName: "경기도" })}>경기도</option>
-          <option value={JSON.stringify({ code: 32, areaName: "강원도" })}>강원도</option>
-          <option value={JSON.stringify({ code: 33, areaName: "충청북도" })}>충청북도</option>
-          <option value={JSON.stringify({ code: 34, areaName: "충청남도" })}>충청남도</option>
-          <option value={JSON.stringify({ code: 35, areaName: "경상북도" })}>경상북도</option>
-          <option value={JSON.stringify({ code: 36, areaName: "경상남도" })}>경상남도</option>
-          <option value={JSON.stringify({ code: 37, areaName: "전북특별자치도" })}>전북특별자치도</option>
-          <option value={JSON.stringify({ code: 38, areaName: "전라남도" })}>전라남도</option>
-          <option value={JSON.stringify({ code: 39, areaName: "제주특별자치도" })}>제주특별자치도</option>
+          {Object.entries(areaNames).map(([code, areaName]) => (
+            <option key={code} value={JSON.stringify({ code: Number(code), areaName })}>
+              {areaName}
+            </option>
+          ))}
         </SearchSelect>
         <DateBox>
           <DateDisplay
@@ -270,10 +295,7 @@ const Home = () => {
 
       <Modal
         isOpen={showDateRange}
-        onRequestClose={async () => {
-          setShowDateRange(false);
-          await fetchTravelData();
-        }}
+        onRequestClose={() => setShowDateRange(false)}
         style={{
           overlay: {
             backgroundColor: "rgba(0, 0, 0, 0.5)",
@@ -308,31 +330,30 @@ const Home = () => {
 
       <TagContainer>
         <TagRow>
-          <Tag>태그 1</Tag>
-          <Tag>태그 2</Tag>
-          <Tag>태그 3</Tag>
+          <Tag selected={selectedTag === "모두"} onClick={() => handleTagClick("모두")}>
+            모두
+          </Tag>
+          <Tag selected={selectedTag === "관광지"} onClick={() => handleTagClick("관광지")}>
+            관광지
+          </Tag>
+          <Tag selected={selectedTag === "문화시설"} onClick={() => handleTagClick("문화시설")}>
+            문화시설
+          </Tag>
         </TagRow>
         <TagRow>
-          <Tag>태그 4</Tag>
-          <Tag>태그 5</Tag>
+          <Tag selected={selectedTag === "행사"} onClick={() => handleTagClick("행사")}>
+            행사
+          </Tag>
+          <Tag selected={selectedTag === "음식점"} onClick={() => handleTagClick("음식점")}>
+            음식점
+          </Tag>
         </TagRow>
       </TagContainer>
 
-      {/* {GUIDES.map((guide) => (
-        <Guide key={guide.id}>
-          <ImagePlaceholder />
-          <Title>{guide.title}</Title>
-          <Subtitle>{guide.subTitle}</Subtitle>
-          <DescriptionWrapper>
-            <Description>{guide.text}</Description>
-            <MoreButton to={`guide/${guide.id}`} state={guide}>
-              더보기
-            </MoreButton>
-          </DescriptionWrapper>
-        </Guide>
-      ))} */}
+      {isLoading && <div>Loading...</div>}
+      {error && <div>Error: {error.message}</div>}
 
-      {travels?.map((guide) => (
+      {(displayedTravels.length > 0 ? displayedTravels : initialTravels)?.map((guide) => (
         <Guide key={guide.contentid}>
           <ImagePlaceholder>
             {guide.firstimage ? (
@@ -342,7 +363,7 @@ const Home = () => {
             ) : null}
           </ImagePlaceholder>
           <Title>{guide.title}</Title>
-          <Subtitle>{`${area.areaName}`}</Subtitle>
+          <Subtitle>{`${checkArea(guide.areacode)}`}</Subtitle>
           <DescriptionWrapper>
             <Description>{guide.text}</Description>
             <MoreButton to={`guide/${guide.id}`} state={guide}>
