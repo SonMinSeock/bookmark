@@ -81,7 +81,7 @@ const AddBox = styled(ScheduleBox)`
   flex-shrink: 0;
 `;
 
-const GuideFinally = () => {
+const GuideBookCreateFinallyStep = () => {
   const [schedule, setSchedule] = useState({
     day1: [],
     day2: [],
@@ -120,4 +120,4 @@ const GuideFinally = () => {
   );
 };
 
-export default GuideFinally;
+export default GuideBookCreateFinallyStep;

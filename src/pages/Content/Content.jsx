@@ -1,6 +1,7 @@
 import styled from "styled-components";
-import { FaArrowLeft, FaRegBookmark } from "react-icons/fa";
+import { FaRegBookmark } from "react-icons/fa";
 import { useLocation, useNavigate } from "react-router-dom";
+import { IoChevronBackOutline } from "react-icons/io5";
 
 const Container = styled.div`
   padding: 16px;
@@ -70,7 +71,7 @@ const Description = styled.p`
   margin: 0;
 `;
 
-const Guide = () => {
+const Content = () => {
   const navigate = useNavigate();
   const { state: guide } = useLocation();
 
@@ -78,14 +79,14 @@ const Guide = () => {
     <Container>
       <Header>
         <BackButton onClick={() => navigate(-1)}>
-          <FaArrowLeft />
+          <IoChevronBackOutline />
         </BackButton>
       </Header>
       <ImagePlaceholder />
       <TitleRow>
         <Title>{guide.title}</Title>
         <BookmarkButton>
-          <FaRegBookmark />
+          <FaRegBookmark size={23} />
         </BookmarkButton>
       </TitleRow>
       <Subtitle>{guide.subTitle}</Subtitle>
@@ -94,4 +95,4 @@ const Guide = () => {
   );
 };
 
-export default Guide;
+export default Content;

@@ -1,207 +1,36 @@
 import { useState, useEffect } from "react";
-import styled from "styled-components";
-import { FaCalendarAlt, FaArrowUp } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import {
+  Container,
+  SearchBox,
+  SearchSelect,
+  DateBox,
+  DateDisplay,
+  TagContainer,
+  TagRow,
+  Tag,
+  ContentContainer,
+  ImagePlaceholder,
+  ContentHeader,
+  Title,
+  Subtitle,
+  DescriptionWrapper,
+  Description,
+  MoreButton,
+  CloseButton,
+  ScrollToTopButton,
+} from "../styles/HomeStyles"; // 경로를 상황에 맞게 조정하세요.
+import { FaCalendarAlt, FaArrowUp, FaBookmark, FaRegBookmark } from "react-icons/fa";
 import { DateRange } from "react-date-range";
 import Modal from "react-modal";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
 import { useInitialTravels, useTravels, useFestivals } from "../hooks/useTravelQuries";
-import { FaRegBookmark } from "react-icons/fa";
 import ClipLoader from "react-spinners/ClipLoader"; // 로딩 스피너 추가
+import noImage from "../assets/noimage.png";
+import { useDispatch, useSelector } from "react-redux";
+import { addBookmark, removeBookmark } from "../redux/bookmarkSlice"; // slice에서 가져오기
 
 Modal.setAppElement("#root");
-
-const Container = styled.div`
-  margin-top: 40px;
-  padding: 16px;
-  padding-bottom: 80px;
-  box-sizing: border-box;
-`;
-
-const SearchBox = styled.div`
-  background-color: white;
-  padding: 16px;
-  border-radius: 12px;
-  margin-bottom: 16px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-`;
-
-const SearchSelect = styled.select`
-  width: 100%;
-  padding: 12px;
-  font-size: 16px;
-  border-radius: 8px;
-  border: 1px solid #ddd;
-  margin-bottom: 12px;
-  background-color: #f0f0f0;
-  color: #333;
-
-  &::placeholder {
-    color: #aaa;
-  }
-`;
-
-const DateBox = styled.div`
-  display: flex;
-  align-items: center;
-  padding: 12px;
-  background-color: #f0f0f0;
-  border-radius: 8px;
-  color: #aaa;
-`;
-
-const DateDisplay = styled.div`
-  display: flex;
-  align-items: center;
-  padding: 12px;
-  border-radius: 8px;
-  color: #aaa;
-  cursor: pointer;
-`;
-
-const TagContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
-`;
-
-const TagRow = styled.div`
-  display: flex;
-  gap: 1rem;
-`;
-
-const Tag = styled.div`
-  background-color: ${(props) => (props.selected ? "#007aff" : "#e0e0e0")};
-  color: ${(props) => (props.selected ? "white" : "#333")};
-  padding: 8px 12px;
-  border-radius: 20px;
-  width: 89px;
-  font-size: 13px;
-  font-weight: bold;
-  text-align: center;
-  cursor: pointer;
-  transition: background-color 0.3s ease, color 0.3s ease;
-
-  &:hover {
-    background-color: ${(props) => (props.selected ? "#005bbb" : "#cce7ff")};
-    color: white;
-  }
-`;
-
-const Guide = styled.div`
-  background-color: white;
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin-bottom: 16px;
-`;
-
-const ImagePlaceholder = styled.div`
-  width: 100%;
-  height: 150px;
-  background-color: #e0e0e0;
-  border-radius: 8px;
-  margin-bottom: 12px;
-  & img {
-    width: 100%;
-    height: 100%;
-  }
-`;
-
-const GuideContainer = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  & .bookmark-icon:hover {
-    color: #007aff;
-    cursor: pointer;
-  }
-`;
-
-const Title = styled.h2`
-  font-size: 14px;
-  font-weight: bold;
-  margin: 0;
-  margin-bottom: 8px;
-`;
-
-const Subtitle = styled.p`
-  font-size: 14px;
-  font-weight: bold;
-  color: #aaa;
-  margin: 0;
-  margin-bottom: 12px;
-`;
-
-const DescriptionWrapper = styled.div`
-  position: relative;
-`;
-
-const Description = styled.p`
-  font-size: 14px;
-  line-height: 22px;
-  color: #333;
-  margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  padding-right: 60px;
-`;
-
-const MoreButton = styled(Link)`
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  background: white;
-  color: #007aff;
-  text-decoration: none;
-  font-weight: bold;
-  border-bottom: 1px solid transparent;
-  &:hover {
-    border-bottom: 1px solid #007aff;
-  }
-`;
-
-const CloseButton = styled.button`
-  background: none;
-  border: none;
-  color: #007aff;
-  font-size: 16px;
-  cursor: pointer;
-  margin-top: 10px;
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  font-weight: bold;
-`;
-
-const ScrollToTopButton = styled.button`
-  position: fixed;
-  bottom: 70px;
-  right: 30px;
-  background-color: #007aff;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 50px;
-  height: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  cursor: pointer;
-  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
-
-  &:hover {
-    background-color: #005bbb;
-  }
-`;
 
 // 지역, 코드 이름구성된 객체
 const areaNames = {
@@ -234,6 +63,7 @@ const tagTypes = {
 };
 
 const Home = () => {
+  // 1. 상태 관리
   const [area, setArea] = useState("");
   const [showDateRange, setShowDateRange] = useState(false);
   const [selectedRange, setSelectedRange] = useState([
@@ -247,6 +77,9 @@ const Home = () => {
   const [displayedTravels, setDisplayedTravels] = useState([]);
   const [page, setPage] = useState(1);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
+
+  const dispatch = useDispatch(); // Redux dispatch 사용
+  const bookmarks = useSelector((state) => state.bookmarks); // 북마크 데이터 가져오기
 
   const { data: initialTravels, isLoading: isInitialLoading, error: initialError } = useInitialTravels();
   const {
@@ -269,25 +102,7 @@ const Home = () => {
     error: festivalError,
   } = useFestivals(selectedTag === "행사" ? area.code : null, startDate, endDate, page);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 300) {
-        setShowScrollToTop(true);
-      } else {
-        setShowScrollToTop(false);
-      }
-
-      if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 50) {
-        if (!isFetching && !isLoading && !isFestivalLoading) {
-          setPage((prevPage) => prevPage + 1);
-        }
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [isFetching, isLoading, isFestivalLoading]);
-
+  // 2. 핸들러 함수 정의
   const handleScrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -326,6 +141,35 @@ const Home = () => {
     return areaNames[areaCode] || "알 수 없는 지역";
   };
 
+  // 북마크 클릭핸들러
+  const handleBookmarkClick = (guide) => {
+    if (bookmarks.some((item) => item.contentid === guide.contentid)) {
+      dispatch(removeBookmark(guide.contentid));
+    } else {
+      dispatch(addBookmark(guide));
+    }
+  };
+
+  // 3. useEffect 정의
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 300) {
+        setShowScrollToTop(true);
+      } else {
+        setShowScrollToTop(false);
+      }
+
+      if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 50) {
+        if (!isFetching && !isLoading && !isFestivalLoading) {
+          setPage((prevPage) => prevPage + 1);
+        }
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [isFetching, isLoading, isFestivalLoading]);
+
   useEffect(() => {
     if (selectedTag === "행사") {
       if (festivalData && festivalData.length > 0) {
@@ -353,6 +197,8 @@ const Home = () => {
       }
     }
   }, [page, travels, festivalData, selectedTag]);
+
+  console.log(bookmarks);
 
   return (
     <Container>
@@ -449,27 +295,33 @@ const Home = () => {
       {festivalError && <div>Error: {festivalError.message}</div>}
 
       {displayedTravels.length > 0 &&
-        displayedTravels.map((guide) => (
-          <Guide key={guide.contentid}>
+        displayedTravels.map((content) => (
+          <ContentContainer key={content.contentid}>
             <ImagePlaceholder>
-              {guide.firstimage ? (
-                <img src={guide.firstimage} />
-              ) : guide.fistimage2 ? (
-                <img src={guide.firstimage2} />
-              ) : null}
+              {content.firstimage ? (
+                <img src={content.firstimage} />
+              ) : content.fistimage2 ? (
+                <img src={content.firstimage2} />
+              ) : (
+                <img src={noImage} />
+              )}
             </ImagePlaceholder>
-            <GuideContainer>
-              <Title>{guide.title}</Title>
-              <FaRegBookmark size={20} className="bookmark-icon" />
-            </GuideContainer>
-            <Subtitle>{`${checkArea(guide.areacode)}`}</Subtitle>
+            <ContentHeader>
+              <Title>{content.title}</Title>
+              {bookmarks.some((item) => item.contentid === content.contentid) ? (
+                <FaBookmark size={20} className="bookmark-icon selected" onClick={() => handleBookmarkClick(content)} />
+              ) : (
+                <FaRegBookmark size={20} className="bookmark-icon" onClick={() => handleBookmarkClick(content)} />
+              )}
+            </ContentHeader>
+            <Subtitle>{`${checkArea(content.areacode)}`}</Subtitle>
             <DescriptionWrapper>
-              <Description>{guide.text}</Description>
-              <MoreButton to={`guide/${guide.id}`} state={guide}>
+              <Description>{content.text}</Description>
+              <MoreButton to={`contents/${content.contentid}`} state={content}>
                 더보기
               </MoreButton>
             </DescriptionWrapper>
-          </Guide>
+          </ContentContainer>
         ))}
     </Container>
   );

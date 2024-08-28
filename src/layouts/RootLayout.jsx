@@ -1,8 +1,8 @@
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { FaHome, FaRegBookmark, FaBookmark } from "react-icons/fa";
-import { IoIosAddCircleOutline } from "react-icons/io";
-import { IoHomeOutline } from "react-icons/io5";
+import { FaRegBookmark, FaBookmark, FaBookOpen, FaPlus } from "react-icons/fa";
+// import { IoIosAddCircleOutline } from "react-icons/io";
+import { IoHomeOutline, IoHomeSharp } from "react-icons/io5";
 
 const LayoutContainer = styled.div`
   height: ${location.pathname === "/welcome" ? "100vh" : null};
@@ -44,6 +44,30 @@ const NavIcon = styled.div`
   }
 `;
 
+const FloatingAddButton = styled.button`
+  position: fixed;
+  bottom: 80px; /* Scroll to top button보다 위에 위치 */
+  right: 30px;
+  background-color: #ff6b6b; // 파란색 대신 밝은 빨간색 사용
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  cursor: pointer;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+  z-index: 1500; /* Scroll to top button보다 위에 위치 */
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+`;
+
 const RootLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -54,7 +78,10 @@ const RootLayout = () => {
     location.pathname === "/" ||
     location.pathname.startsWith("/guide/finally") ||
     location.pathname === "/bookmark" ||
-    location.pathname.startsWith("/myGuideBooks");
+    location.pathname.startsWith("/myGuideBooks") ||
+    location.pathname === "/guidebook/create/finally-step";
+
+  const isGuidebookCreatePath = location.pathname.startsWith("/guidebook/create");
 
   const handleNavigate = (path) => {
     navigate(path);
@@ -63,17 +90,22 @@ const RootLayout = () => {
   return (
     <LayoutContainer>
       <Outlet />
+      {!isGuidebookCreatePath && (
+        <FloatingAddButton onClick={() => handleNavigate("/guidebook/create/first-step")}>
+          <FaPlus />
+        </FloatingAddButton>
+      )}
       {showNavBar && (
         <NavBar>
           <NavIcon>
             {location.pathname === "/" ? (
-              <FaHome size={24} className="selected" />
+              <IoHomeSharp size={24} className="selected" />
             ) : (
               <IoHomeOutline size={24} onClick={() => handleNavigate("/")} />
             )}
           </NavIcon>
           <NavIcon>
-            <IoIosAddCircleOutline size={24} onClick={() => handleNavigate("/guide/create")} />
+            <FaBookOpen size={24} onClick={() => handleNavigate("/myGuideBooks")} />
           </NavIcon>
           <NavIcon>
             {location.pathname.startsWith("/bookmark") ? (

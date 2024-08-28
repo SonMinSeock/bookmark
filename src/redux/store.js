@@ -1,8 +1,10 @@
 import { configureStore } from "@reduxjs/toolkit";
-import exampleSlice from "./slice";
+import bookmarkReducer from "./bookmarkSlice";
 
-export const store = configureStore({
+const store = configureStore({
   reducer: {
-    example: exampleSlice,
+    bookmarks: bookmarkReducer,
   },
 });
+
+export default store;

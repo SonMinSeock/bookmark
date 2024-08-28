@@ -1,5 +1,6 @@
 import styled from "styled-components";
-import { FaArrowLeft, FaCalendarAlt } from "react-icons/fa";
+import { FaCalendarAlt } from "react-icons/fa";
+import { IoChevronBackOutline } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { DateRange } from "react-date-range";
@@ -99,7 +100,7 @@ const CloseButton = styled.button`
   font-weight: bold;
 `;
 
-const GuideCreate = () => {
+const GuideBookCreateFirstStep = () => {
   const [showDateRange, setShowDateRange] = useState(false);
   const [selectedRange, setSelectedRange] = useState([
     {
@@ -111,7 +112,7 @@ const GuideCreate = () => {
   const navigate = useNavigate();
 
   const handleNext = () => {
-    navigate("/guide/title");
+    navigate("/guidebook/create/second-step");
   };
 
   const handleDateSelect = (ranges) => {
@@ -133,7 +134,7 @@ const GuideCreate = () => {
     <Container>
       <Header>
         <BackButton onClick={() => navigate(-1)}>
-          <FaArrowLeft />
+          <IoChevronBackOutline />
         </BackButton>
       </Header>
       <SearchBox>
@@ -184,4 +185,4 @@ const GuideCreate = () => {
   );
 };
 
-export default GuideCreate;
+export default GuideBookCreateFirstStep;

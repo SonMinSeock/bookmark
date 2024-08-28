@@ -4,10 +4,10 @@ import RootLayout from "../layouts/RootLayout";
 import Login from "../pages/Auth/Login";
 import Signup from "../pages/Auth/Signup";
 import Home from "../pages/Home";
-import Guide from "../pages/Guide/Guide";
-import GuideCreate from "../pages/Guide/GuideCreate";
-import GuideTitle from "../pages/Guide/GuideTitle";
-import GuideFinally from "../pages/Guide/GuideFinally";
+import Content from "../pages/Content/Content";
+import GuideBookCreateFirstStep from "../pages/Guide/GuideBookCreateFirstStep";
+import GuideBookCreateSecondStep from "../pages/Guide/GuideBookCreateSecondStep";
+import GuideBookCreateFinallyStep from "../pages/Guide/GuideBookCreateFinallyStep";
 import BookMark from "../pages/BookMark/BookMark";
 import BookMarkSelect from "../pages/BookMark/BookMarkSelect";
 import MyGuideBooks from "../pages/Guide/MyGuideBooks";
@@ -22,11 +22,13 @@ const AppRouter = () => {
           <Route path="welcome" element={<Welcome />} />
           <Route path="login" element={<Login />} />
           <Route path="signup" element={<Signup />} />
-          <Route path="guide">
-            <Route path=":id" element={<Guide />} />
-            <Route path="create" element={<GuideCreate />} />
-            <Route path="title" element={<GuideTitle />} />
-            <Route path="finally" element={<GuideFinally />} />
+          <Route path="contents">
+            <Route path=":id" element={<Content />} />
+          </Route>
+          <Route path="guidebook">
+            <Route path="create/first-step" element={<GuideBookCreateFirstStep />} />
+            <Route path="create/second-step" element={<GuideBookCreateSecondStep />} />
+            <Route path="create/finally-step" element={<GuideBookCreateFinallyStep />} />
             <Route path="select" element={<BookMarkSelect />} />
           </Route>
           <Route path="myGuideBooks">

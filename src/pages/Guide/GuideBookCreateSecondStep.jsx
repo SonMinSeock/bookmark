@@ -1,6 +1,6 @@
 import { useState } from "react";
 import styled from "styled-components";
-import { FaArrowLeft } from "react-icons/fa";
+import { IoChevronBackOutline } from "react-icons/io5";
 import { useNavigate, useLocation } from "react-router-dom";
 
 const Container = styled.div`
@@ -72,7 +72,7 @@ const Button = styled.button`
   margin-top: auto; /* 버튼을 하단에 배치 */
 `;
 
-const GuideTitle = () => {
+const GuideBookCreateSecondStep = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { destination } = location.state || {};
@@ -82,14 +82,14 @@ const GuideTitle = () => {
     // handle next steps, for example, saving the guide
     console.log("Destination:", destination);
     console.log("Title:", title);
-    navigate("/guide/finally");
+    navigate("/guidebook/create/finally-step");
   };
 
   return (
     <Container>
       <Header>
         <BackButton onClick={() => navigate(-1)}>
-          <FaArrowLeft />
+          <IoChevronBackOutline />
         </BackButton>
       </Header>
       <FormContainer>
@@ -109,4 +109,4 @@ const GuideTitle = () => {
   );
 };
 
-export default GuideTitle;
+export default GuideBookCreateSecondStep;
