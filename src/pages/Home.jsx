@@ -6,7 +6,7 @@ import { DateRange } from "react-date-range";
 import Modal from "react-modal";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
-import { useInitialTravels, useTravels } from "../hooks/useTravelQuries";
+import { useInitialTravels, useTravels, useFestivals } from "../hooks/useTravelQuries";
 import { FaRegBookmark } from "react-icons/fa";
 import ClipLoader from "react-spinners/ClipLoader"; // 로딩 스피너 추가
 
@@ -182,7 +182,7 @@ const CloseButton = styled.button`
 
 const ScrollToTopButton = styled.button`
   position: fixed;
-  bottom: 70px; // 기존의 30px에서 70px로 변경하여 버튼을 더 위로 이동
+  bottom: 70px;
   right: 30px;
   background-color: #007aff;
   color: white;
@@ -256,6 +256,19 @@ const Home = () => {
     isFetching,
   } = useTravels(area.code, tagTypes[selectedTag], selectedTag, page);
 
+  const startDate = selectedRange[0].startDate
+    ? selectedRange[0].startDate.toISOString().split("T")[0].replace(/-/g, "")
+    : null;
+  const endDate = selectedRange[0].endDate
+    ? selectedRange[0].endDate.toISOString().split("T")[0].replace(/-/g, "")
+    : null;
+
+  const {
+    data: festivalData,
+    isLoading: isFestivalLoading,
+    error: festivalError,
+  } = useFestivals(selectedTag === "행사" ? area.code : null, startDate, endDate, page);
+
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 300) {
@@ -265,7 +278,7 @@ const Home = () => {
       }
 
       if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 50) {
-        if (!isFetching && !isLoading) {
+        if (!isFetching && !isLoading && !isFestivalLoading) {
           setPage((prevPage) => prevPage + 1);
         }
       }
@@ -273,7 +286,7 @@ const Home = () => {
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [isFetching, isLoading]);
+  }, [isFetching, isLoading, isFestivalLoading]);
 
   const handleScrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -314,14 +327,32 @@ const Home = () => {
   };
 
   useEffect(() => {
-    if (page === 1) {
-      // 첫 페이지 요청 시에만 초기화하여 데이터 중복을 방지
-      setDisplayedTravels(travels || []);
-    } else if (travels && travels.length > 0) {
-      // 그 외의 페이지는 추가된 데이터를 병합
-      setDisplayedTravels((prevTravels) => [...prevTravels, ...travels]);
+    if (selectedTag === "행사") {
+      if (festivalData && festivalData.length > 0) {
+        setDisplayedTravels((prevTravels) => {
+          const newTravels = [...prevTravels, ...festivalData];
+          const uniqueTravels = Array.from(new Set(newTravels.map((travel) => travel.contentid))).map((id) => {
+            return newTravels.find((travel) => travel.contentid === id);
+          });
+          return uniqueTravels;
+        });
+      } else if (page === 1) {
+        setDisplayedTravels([]); // 첫 페이지에서 데이터가 없을 경우 초기화
+      }
+    } else {
+      if (page === 1) {
+        setDisplayedTravels(travels || []);
+      } else if (travels && travels.length > 0) {
+        setDisplayedTravels((prevTravels) => {
+          const newTravels = [...prevTravels, ...travels];
+          const uniqueTravels = Array.from(new Set(newTravels.map((travel) => travel.contentid))).map((id) => {
+            return newTravels.find((travel) => travel.contentid === id);
+          });
+          return uniqueTravels;
+        });
+      }
     }
-  }, [page, travels]);
+  }, [page, travels, festivalData, selectedTag]);
 
   return (
     <Container>
@@ -409,35 +440,37 @@ const Home = () => {
         </TagRow>
       </TagContainer>
 
-      {(isInitialLoading || isLoading) && (
+      {(isInitialLoading || isLoading || isFestivalLoading) && (
         <div style={{ textAlign: "center", padding: "20px" }}>
           <ClipLoader color="#007aff" size={50} />
         </div>
       )}
       {error && <div>Error: {error.message}</div>}
+      {festivalError && <div>Error: {festivalError.message}</div>}
 
-      {(displayedTravels.length > 0 ? displayedTravels : initialTravels)?.map((guide) => (
-        <Guide key={guide.contentid}>
-          <ImagePlaceholder>
-            {guide.firstimage ? (
-              <img src={guide.firstimage} />
-            ) : guide.fistimage2 ? (
-              <img src={guide.firstimage2} />
-            ) : null}
-          </ImagePlaceholder>
-          <GuideContainer>
-            <Title>{guide.title}</Title>
-            <FaRegBookmark size={20} className="bookmark-icon" />
-          </GuideContainer>
-          <Subtitle>{`${checkArea(guide.areacode)}`}</Subtitle>
-          <DescriptionWrapper>
-            <Description>{guide.text}</Description>
-            <MoreButton to={`guide/${guide.id}`} state={guide}>
-              더보기
-            </MoreButton>
-          </DescriptionWrapper>
-        </Guide>
-      ))}
+      {displayedTravels.length > 0 &&
+        displayedTravels.map((guide) => (
+          <Guide key={guide.contentid}>
+            <ImagePlaceholder>
+              {guide.firstimage ? (
+                <img src={guide.firstimage} />
+              ) : guide.fistimage2 ? (
+                <img src={guide.firstimage2} />
+              ) : null}
+            </ImagePlaceholder>
+            <GuideContainer>
+              <Title>{guide.title}</Title>
+              <FaRegBookmark size={20} className="bookmark-icon" />
+            </GuideContainer>
+            <Subtitle>{`${checkArea(guide.areacode)}`}</Subtitle>
+            <DescriptionWrapper>
+              <Description>{guide.text}</Description>
+              <MoreButton to={`guide/${guide.id}`} state={guide}>
+                더보기
+              </MoreButton>
+            </DescriptionWrapper>
+          </Guide>
+        ))}
     </Container>
   );
 };

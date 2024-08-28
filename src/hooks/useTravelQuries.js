@@ -1,6 +1,6 @@
 // src/hooks/useTravelQueries.js
 import { useQuery } from "@tanstack/react-query";
-import { fetchTravelData } from "../api/travelApi";
+import { fetchTravelData, fetchFestivalData } from "../api/travelApi";
 
 export function useInitialTravels() {
   return useQuery({
@@ -15,5 +15,14 @@ export function useTravels(areaCode, tagType, selectedTag, page = 1) {
     queryFn: () => fetchTravelData(areaCode, tagType, page),
     enabled: !!areaCode || !!selectedTag, // areaCode 또는 selectedTag가 변경될 때 실행
     keepPreviousData: true, // 이전 데이터를 유지하면서 새로운 데이터를 불러옵니다.
+  });
+}
+
+export function useFestivals(areaCode, startDate, endDate, page = 1) {
+  return useQuery({
+    queryKey: ["festivals", areaCode, startDate, endDate, page],
+    queryFn: () => fetchFestivalData(areaCode, startDate, endDate, page),
+    enabled: true, // 조건에 따라 쿼리를 활성화
+    keepPreviousData: true,
   });
 }
