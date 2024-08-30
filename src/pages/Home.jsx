@@ -29,6 +29,7 @@ import ClipLoader from "react-spinners/ClipLoader"; // 로딩 스피너 추가
 import noImage from "../assets/noimage.png";
 import { useDispatch, useSelector } from "react-redux";
 import { addBookmark, removeBookmark } from "../redux/bookmarkSlice"; // slice에서 가져오기
+import { useNavigate } from "react-router-dom";
 
 Modal.setAppElement("#root");
 
@@ -77,9 +78,9 @@ const Home = () => {
   const [displayedTravels, setDisplayedTravels] = useState([]);
   const [page, setPage] = useState(1);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
-
   const dispatch = useDispatch(); // Redux dispatch 사용
   const bookmarks = useSelector((state) => state.bookmarks); // 북마크 데이터 가져오기
+  const navigate = useNavigate();
 
   const { data: initialTravels, isLoading: isInitialLoading, error: initialError } = useInitialTravels();
   const {
@@ -150,6 +151,10 @@ const Home = () => {
     }
   };
 
+  const handleMoreButtonClick = (content) => {
+    navigate(`contents/${content.contentid}`, { state: { content } });
+  };
+
   // 3. useEffect 정의
   useEffect(() => {
     const handleScroll = () => {
@@ -177,7 +182,7 @@ const Home = () => {
           const newTravels = [...prevTravels, ...festivalData];
           const uniqueTravels = Array.from(new Set(newTravels.map((travel) => travel.contentid))).map((id) => {
             return newTravels.find((travel) => travel.contentid === id);
-          });
+          }); // Set 이용하여 관광 데이터 콘텐츠 id 중복 제거후 Set에서 배열로 형변환
           return uniqueTravels;
         });
       } else if (page === 1) {
@@ -298,13 +303,7 @@ const Home = () => {
         displayedTravels.map((content) => (
           <ContentContainer key={content.contentid}>
             <ImagePlaceholder>
-              {content.firstimage ? (
-                <img src={content.firstimage} />
-              ) : content.fistimage2 ? (
-                <img src={content.firstimage2} />
-              ) : (
-                <img src={noImage} />
-              )}
+              <img src={content.firstimage || content.firstimage2 || noImage} alt={content.title || "No Image"} />
             </ImagePlaceholder>
             <ContentHeader>
               <Title>{content.title}</Title>
@@ -317,9 +316,11 @@ const Home = () => {
             <Subtitle>{`${checkArea(content.areacode)}`}</Subtitle>
             <DescriptionWrapper>
               <Description>{content.text}</Description>
-              <MoreButton to={`contents/${content.contentid}`} state={content}>
-                더보기
-              </MoreButton>
+              {content && (
+                <MoreButton to={`contents/${content.contentid}`} onClick={handleMoreButtonClick.bind(null, content)}>
+                  더보기
+                </MoreButton>
+              )}
             </DescriptionWrapper>
           </ContentContainer>
         ))}

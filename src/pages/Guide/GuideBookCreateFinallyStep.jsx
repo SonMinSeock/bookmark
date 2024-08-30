@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styled from "styled-components";
+import { useLocation, useNavigate } from "react-router-dom";
+import noImage from "../../assets/noimage.png";
 
 const Container = styled.div`
   padding: 16px;
@@ -57,7 +59,8 @@ const ScheduleContainer = styled.div`
   display: flex;
   overflow-x: auto;
   white-space: nowrap;
-  max-width: calc(100% - 120px); /* 일정 추가 박스의 너비를 고려하여 설정 */
+  max-width: calc(100% - 120px);
+  margin-right: 1rem;
 `;
 
 const ScheduleBox = styled.div`
@@ -75,6 +78,14 @@ const ScheduleBox = styled.div`
   margin-right: 16px;
 `;
 
+const ImageBox = styled.img`
+  width: 100px;
+  height: 100px;
+  border-radius: 8px;
+  margin-right: 16px;
+  object-fit: cover;
+`;
+
 const AddBox = styled(ScheduleBox)`
   background-color: #ddd;
   color: #333;
@@ -82,25 +93,54 @@ const AddBox = styled(ScheduleBox)`
 `;
 
 const GuideBookCreateFinallyStep = () => {
-  const [schedule, setSchedule] = useState({
-    day1: [],
-    day2: [],
-    day3: [],
-  });
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const { area, dateRange, title, previousSchedule, selectedDay, selectedContent } = location.state || {};
+
+  const [schedule, setSchedule] = useState(previousSchedule || { day1: [], day2: [], day3: [] });
+
+  useEffect(() => {
+    if (selectedDay && selectedContent) {
+      setSchedule((prev) => {
+        const existingDaySchedule = prev[selectedDay];
+        // 중복된 항목이 있는지 확인
+        const isDuplicate = existingDaySchedule.some((item) => item.contentid === selectedContent.contentid);
+        if (!isDuplicate) {
+          return {
+            ...prev,
+            [selectedDay]: [...existingDaySchedule, selectedContent],
+          };
+        }
+        return prev; // 중복이 있다면 기존 상태 반환
+      });
+    }
+  }, [selectedDay, selectedContent]);
 
   const addSchedule = (day) => {
-    setSchedule((prev) => ({
-      ...prev,
-      [day]: [...prev[day], `일정 ${prev[day].length + 1}`],
-    }));
+    navigate("/guidebook/select", {
+      state: {
+        day,
+        previousSchedule: schedule,
+        area,
+        dateRange,
+        title,
+      },
+    });
   };
 
   return (
     <Container>
       <Header>
-        <Title>제목</Title>
-        <Subtitle>지역</Subtitle>
-        <Subtitle>0000.00.00~0000.00.00</Subtitle>
+        <Title>{title || "제목 없음"}</Title>
+        <Subtitle>{area || "지역 없음"}</Subtitle>
+        <Subtitle>
+          {dateRange
+            ? `${new Date(dateRange.startDate).toLocaleDateString()} ~ ${new Date(
+                dateRange.endDate
+              ).toLocaleDateString()}`
+            : "0000.00.00~0000.00.00"}
+        </Subtitle>
       </Header>
       <Divider />
       {["day1", "day2", "day3"].map((day, index) => (
@@ -108,9 +148,13 @@ const GuideBookCreateFinallyStep = () => {
           <DayTitle>Day{index + 1}</DayTitle>
           <ScheduleWrapper>
             <ScheduleContainer>
-              {schedule[day].map((item, idx) => (
-                <ScheduleBox key={idx}>{item}</ScheduleBox>
-              ))}
+              {schedule[day].map((item, idx) =>
+                item.firstimage ? (
+                  <ImageBox key={idx} src={item.firstimage || item.firstimage2 || noImage} alt={item.title} />
+                ) : (
+                  <ScheduleBox key={idx}>{item.title}</ScheduleBox>
+                )
+              )}
             </ScheduleContainer>
             <AddBox onClick={() => addSchedule(day)}>일정 추가</AddBox>
           </ScheduleWrapper>

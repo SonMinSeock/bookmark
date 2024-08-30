@@ -1,6 +1,5 @@
 // src/styles/HomeStyles.js
 import styled from "styled-components";
-import { Link } from "react-router-dom";
 
 export const Container = styled.div`
   margin-top: 40px;
@@ -148,8 +147,11 @@ export const Description = styled.p`
   padding-right: 60px;
 `;
 
-export const MoreButton = styled(Link)`
+export const MoreButton = styled.button`
+  font-size: 16px;
   position: absolute;
+  cursor: pointer;
+  border: none;
   right: 0;
   bottom: 0;
   background: white;
@@ -157,6 +159,8 @@ export const MoreButton = styled(Link)`
   text-decoration: none;
   font-weight: bold;
   border-bottom: 1px solid transparent;
+  padding-left: 0px;
+  padding-right: 0px;
   &:hover {
     border-bottom: 1px solid #007aff;
   }

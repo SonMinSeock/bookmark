@@ -41,7 +41,7 @@ const SearchBox = styled.div`
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
-const SearchInput = styled.input`
+const SearchSelect = styled.select`
   width: 100%;
   padding: 12px;
   font-size: 16px;
@@ -49,7 +49,7 @@ const SearchInput = styled.input`
   border: 1px solid #ddd;
   margin-bottom: 12px;
   background-color: #f0f0f0;
-  color: #aaa;
+  color: #333;
 
   &::placeholder {
     color: #aaa;
@@ -100,6 +100,26 @@ const CloseButton = styled.button`
   font-weight: bold;
 `;
 
+const areaNames = {
+  1: "서울특별시",
+  2: "인천광역시",
+  3: "대전광역시",
+  4: "대구광역시",
+  5: "광주광역시",
+  6: "부산광역시",
+  7: "울산광역시",
+  8: "세종특별자치시",
+  31: "경기도",
+  32: "강원도",
+  33: "충청북도",
+  34: "충청남도",
+  35: "경상북도",
+  36: "경상남도",
+  37: "전북특별자치도",
+  38: "전라남도",
+  39: "제주특별자치도",
+};
+
 const GuideBookCreateFirstStep = () => {
   const [showDateRange, setShowDateRange] = useState(false);
   const [selectedRange, setSelectedRange] = useState([
@@ -109,10 +129,18 @@ const GuideBookCreateFirstStep = () => {
       key: "selection",
     },
   ]);
+  const [selectedArea, setSelectedArea] = useState("");
   const navigate = useNavigate();
 
   const handleNext = () => {
-    navigate("/guidebook/create/second-step");
+    if (selectedArea && selectedRange[0].startDate && selectedRange[0].endDate) {
+      // 선택된 지역과 날짜 범위를 다음 스텝으로 넘길 수 있습니다.
+      navigate("/guidebook/create/second-step", {
+        state: { area: selectedArea, dateRange: selectedRange[0] },
+      });
+    } else {
+      alert("지역과 일정을 선택해주세요.");
+    }
   };
 
   const handleDateSelect = (ranges) => {
@@ -138,7 +166,20 @@ const GuideBookCreateFirstStep = () => {
         </BackButton>
       </Header>
       <SearchBox>
-        <SearchInput placeholder="어디로 떠나세요?" />
+        <SearchSelect
+          value={selectedArea}
+          onChange={(e) => setSelectedArea(e.target.value)}
+          placeholder="어디로 떠나세요?"
+        >
+          <option value="" disabled>
+            지역을 선택하세요
+          </option>
+          {Object.entries(areaNames).map(([code, areaName]) => (
+            <option key={code} value={areaName}>
+              {areaName}
+            </option>
+          ))}
+        </SearchSelect>
         <DateBox>
           <DateDisplay onClick={() => setShowDateRange(true)}>
             <FaCalendarAlt style={{ marginRight: "8px" }} />

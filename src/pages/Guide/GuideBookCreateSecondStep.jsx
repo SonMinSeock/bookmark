@@ -75,14 +75,15 @@ const Button = styled.button`
 const GuideBookCreateSecondStep = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { destination } = location.state || {};
+  const { area, dateRange } = location.state || {}; // area와 dateRange를 받아옴
   const [title, setTitle] = useState("");
 
   const handleNext = () => {
     // handle next steps, for example, saving the guide
-    console.log("Destination:", destination);
+    console.log("Area:", area); // 선택된 지역을 출력
+    console.log("Date Range:", dateRange); // 선택된 날짜 범위를 출력
     console.log("Title:", title);
-    navigate("/guidebook/create/finally-step");
+    navigate("/guidebook/create/finally-step", { state: { title, area, dateRange } });
   };
 
   return (

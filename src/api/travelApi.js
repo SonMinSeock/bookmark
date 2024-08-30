@@ -46,6 +46,7 @@ export async function fetchFestivalData(areaCode, startDate, endDate, page = 1) 
     );
 
     const res = await response.json();
+    console.log("festival data res : ", res);
     if (res?.response?.body?.items?.item) {
       return res.response.body.items.item;
     } else {

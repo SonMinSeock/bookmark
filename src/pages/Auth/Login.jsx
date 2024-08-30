@@ -189,7 +189,9 @@ const Login = () => {
             </TogglePasswordButton>
           </PasswordInputContainer>
         </div>
-        <LoginButton disabled={!isFormValid}>로그인하기</LoginButton>
+        <LoginButton disabled={!isFormValid} onClick={() => navigate("/")}>
+          로그인하기
+        </LoginButton>
       </Form>
     </Container>
   );
