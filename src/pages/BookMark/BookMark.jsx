@@ -1,10 +1,12 @@
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom"; // useNavigate 추가
 import styled from "styled-components";
 import noImage from "../../assets/noimage.png";
+
 const Container = styled.div`
   padding: 16px;
-  padding-bottom: 100px; /* 하단 네비게이션 바와 겹치지 않도록 패딩 추가 */
-  background-color: #f0f0f0; /* 밝은 회색 배경 */
+  padding-bottom: 100px;
+  background-color: #f0f0f0;
   min-height: 100vh;
   box-sizing: border-box;
   display: flex;
@@ -23,12 +25,12 @@ const ImagePlaceholder = styled.div`
   position: relative;
   background-color: #e0e0e0;
   overflow: hidden;
-  border: 1px solid #ddd; /* 테두리 추가 */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 그림자 추가 */
-  transition: transform 0.3s ease; /* 부드러운 전환 효과 추가 */
+  border: 1px solid #ddd;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
 
   &:hover {
-    transform: scale(1.05); /* 호버 시 확대 */
+    transform: scale(1.05);
   }
 
   & img {
@@ -43,14 +45,20 @@ const ImagePlaceholder = styled.div`
 `;
 
 const BookMark = () => {
-  const bookmarks = useSelector((state) => state.bookmarks); // 북마크 데이터 가져오기
-  // const noImage = "https://via.placeholder.com/150"; // 대체 이미지 URL
+  const bookmarks = useSelector((state) => state.bookmarks);
+  const navigate = useNavigate(); // navigate 함수 사용
+
+  const handleClick = (content) => {
+    navigate(`/contents/${content.contentid}`, { state: { content } });
+  };
 
   return (
     <Container>
       <ImageGrid>
         {bookmarks.map((data) => (
-          <ImagePlaceholder key={data.contentid}>
+          <ImagePlaceholder key={data.contentid} onClick={() => handleClick(data)}>
+            {" "}
+            {/* onClick 추가 */}
             <img src={data.firstimage || noImage} alt="북마크 이미지" />
           </ImagePlaceholder>
         ))}

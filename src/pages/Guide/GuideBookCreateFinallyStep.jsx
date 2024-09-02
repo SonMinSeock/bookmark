@@ -120,7 +120,23 @@ const GuideBookCreateFinallyStep = () => {
 
   const { area, dateRange, title, previousSchedule, selectedDay, selectedContent } = location.state || {};
 
-  const [schedule, setSchedule] = useState(previousSchedule || { day1: [], day2: [], day3: [] });
+  // 날짜 범위에 따른 Day 수 계산
+  const calculateDays = (startDate, endDate) => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const days = [];
+    let currentDay = 1;
+
+    for (let date = start; date <= end; date.setDate(date.getDate() + 1)) {
+      days.push(`day${currentDay}`);
+      currentDay++;
+    }
+    return days;
+  };
+
+  const days = calculateDays(dateRange.startDate, dateRange.endDate);
+
+  const [schedule, setSchedule] = useState(previousSchedule || Object.fromEntries(days.map((day) => [day, []])));
 
   useEffect(() => {
     if (selectedDay && selectedContent) {
@@ -181,7 +197,7 @@ const GuideBookCreateFinallyStep = () => {
         </Subtitle>
       </Header>
       <Divider />
-      {["day1", "day2", "day3"].map((day, index) => (
+      {days.map((day, index) => (
         <DayContainer key={day}>
           <DayTitle>Day{index + 1}</DayTitle>
           <ScheduleWrapper>

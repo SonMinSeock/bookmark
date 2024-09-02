@@ -292,10 +292,32 @@ const Home = () => {
       </TagContainer>
 
       {(isInitialLoading || isLoading || isFestivalLoading) && (
-        <div style={{ textAlign: "center", padding: "20px" }}>
+        <Modal
+          isOpen={true}
+          style={{
+            overlay: {
+              backgroundColor: "rgba(0, 0, 0, 0.5)",
+              zIndex: 1000, // 모달이 상위에 뜨도록 설정
+            },
+            content: {
+              top: "50%",
+              left: "50%",
+              right: "auto",
+              bottom: "auto",
+              marginRight: "-50%",
+              transform: "translate(-50%, -50%)",
+              backgroundColor: "transparent",
+              border: "none",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            },
+          }}
+        >
           <ClipLoader color="#007aff" size={50} />
-        </div>
+        </Modal>
       )}
+
       {error && <div>Error: {error.message}</div>}
       {festivalError && <div>Error: {festivalError.message}</div>}
 

@@ -1,5 +1,5 @@
 import { useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import noImage from "../../assets/noimage.png"; // 대체 이미지 경로
 
@@ -52,8 +52,8 @@ const ScheduleContainer = styled.div`
 `;
 
 const ScheduleBox = styled.div`
-  min-width: 150px;
-  height: 150px;
+  flex: 0 0 100px; /* 고정된 너비를 설정 */
+  height: 100px;
   background-color: #e0e0e0;
   border-radius: 8px;
   margin-right: 16px;
@@ -73,6 +73,8 @@ const ImageBox = styled.img`
 const MyGuideBookDetail = () => {
   const { id } = useParams();
   const guidebooks = useSelector((state) => state.guideBook.books);
+  const navigate = useNavigate();
+
   const guidebook = guidebooks.find((book) => book.id === +id);
 
   if (!guidebook) {
@@ -95,18 +97,27 @@ const MyGuideBookDetail = () => {
           : "0000.00.00~0000.00.00"}
       </DateRange>
       <Divider />
-      {Object.keys(guidebook.schedule).map((day, index) => (
-        <DayContainer key={index}>
-          <DayTitle>Day{index + 1}</DayTitle>
-          <ScheduleContainer>
-            {guidebook.schedule[day].map((item, idx) => (
-              <ScheduleBox key={idx}>
-                <ImageBox src={item.firstimage || item.firstimage2 || noImage} alt={item.title} />
-              </ScheduleBox>
-            ))}
-          </ScheduleContainer>
-        </DayContainer>
-      ))}
+      {Object.keys(guidebook.schedule).map((day, index) => {
+        // 일정이 있는 Day만 렌더링
+        if (guidebook.schedule[day].length > 0) {
+          return (
+            <DayContainer key={index}>
+              <DayTitle>Day{index + 1}</DayTitle>
+              <ScheduleContainer>
+                {guidebook.schedule[day].map((item, idx) => (
+                  <ScheduleBox
+                    key={idx}
+                    onClick={() => navigate(`/contents/${item.contentid}`, { state: { content: item } })}
+                  >
+                    <ImageBox src={item.firstimage || item.firstimage2 || noImage} alt={item.title} />
+                  </ScheduleBox>
+                ))}
+              </ScheduleContainer>
+            </DayContainer>
+          );
+        }
+        return null; // 일정이 없는 경우는 렌더링하지 않음
+      })}
     </Container>
   );
 };

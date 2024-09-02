@@ -105,7 +105,11 @@ const RootLayout = () => {
             )}
           </NavIcon>
           <NavIcon>
-            <FaBookOpen size={24} onClick={() => handleNavigate("/myGuideBooks")} />
+            {location.pathname === "/myGuideBooks" ? (
+              <FaBookOpen size={24} className="selected" />
+            ) : (
+              <FaBookOpen size={24} onClick={() => handleNavigate("/myGuideBooks")} />
+            )}
           </NavIcon>
           <NavIcon>
             {location.pathname.startsWith("/bookmark") ? (
