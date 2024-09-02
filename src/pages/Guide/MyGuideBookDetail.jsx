@@ -1,4 +1,7 @@
+import { useSelector } from "react-redux";
+import { useParams } from "react-router-dom";
 import styled from "styled-components";
+import noImage from "../../assets/noimage.png"; // 대체 이미지 경로
 
 const Container = styled.div`
   padding: 16px;
@@ -42,24 +45,66 @@ const DayTitle = styled.h2`
   margin: 0 0 16px 0;
 `;
 
+const ScheduleContainer = styled.div`
+  display: flex;
+  overflow-x: auto;
+  white-space: nowrap;
+`;
+
 const ScheduleBox = styled.div`
-  width: 100px;
-  height: 100px;
+  min-width: 150px;
+  height: 150px;
   background-color: #e0e0e0;
+  border-radius: 8px;
+  margin-right: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+`;
+
+const ImageBox = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   border-radius: 8px;
 `;
 
 const MyGuideBookDetail = () => {
+  const { id } = useParams();
+  const guidebooks = useSelector((state) => state.guideBook.books);
+  const guidebook = guidebooks.find((book) => book.id === +id);
+
+  if (!guidebook) {
+    return (
+      <Container>
+        <Title>가이드북을 찾을 수 없습니다.</Title>
+      </Container>
+    );
+  }
+
   return (
     <Container>
-      <Title>제목</Title>
-      <Subtitle>지역</Subtitle>
-      <DateRange>0000.00.00~0000.00.00</DateRange>
+      <Title>{guidebook.title || "제목 없음"}</Title>
+      <Subtitle>{guidebook.area || "지역 없음"}</Subtitle>
+      <DateRange>
+        {guidebook.dateRange
+          ? `${new Date(guidebook.dateRange.startDate).toLocaleDateString()} ~ ${new Date(
+              guidebook.dateRange.endDate
+            ).toLocaleDateString()}`
+          : "0000.00.00~0000.00.00"}
+      </DateRange>
       <Divider />
-      {[1, 2, 3].map((day, index) => (
+      {Object.keys(guidebook.schedule).map((day, index) => (
         <DayContainer key={index}>
-          <DayTitle>Day{day}</DayTitle>
-          <ScheduleBox />
+          <DayTitle>Day{index + 1}</DayTitle>
+          <ScheduleContainer>
+            {guidebook.schedule[day].map((item, idx) => (
+              <ScheduleBox key={idx}>
+                <ImageBox src={item.firstimage || item.firstimage2 || noImage} alt={item.title} />
+              </ScheduleBox>
+            ))}
+          </ScheduleContainer>
         </DayContainer>
       ))}
     </Container>

@@ -93,9 +93,9 @@ const BookMarkSelect = () => {
   // 선택된 지역 코드와 일치하는 북마크만 필터링
   const filteredBookmarks = bookmarks.filter((bookmark) => bookmark.areacode === selectedAreaCode);
 
-  // 현재 선택된 Day에 이미 추가된 북마크 ID 목록 가져오기
-  const currentDaySchedule = location.state.previousSchedule[location.state.day] || [];
-  const addedBookmarkIds = currentDaySchedule.map((item) => item.contentid);
+  // 모든 Day의 스케줄에서 이미 추가된 북마크 ID 목록 가져오기
+  const allDaysSchedule = Object.values(location.state.previousSchedule || {}).flat();
+  const addedBookmarkIds = allDaysSchedule.map((item) => item.contentid);
 
   const handleSelect = (data) => {
     setSelectedId(data.contentid);

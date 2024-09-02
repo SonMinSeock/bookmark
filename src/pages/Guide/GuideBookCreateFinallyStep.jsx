@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useLocation, useNavigate } from "react-router-dom";
 import noImage from "../../assets/noimage.png";
+import { FaSave } from "react-icons/fa";
+import { useDispatch } from "react-redux";
+import { addGuideBook } from "../../redux/guideBookSlice"; // 리덕스 액션 임포트
 
 const Container = styled.div`
   padding: 16px;
@@ -92,9 +95,28 @@ const AddBox = styled(ScheduleBox)`
   flex-shrink: 0;
 `;
 
+const FloatingButton = styled.button`
+  position: fixed;
+  bottom: 82px;
+  right: 20px;
+  background-color: #007aff;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  cursor: pointer;
+  z-index: 1000;
+`;
+
 const GuideBookCreateFinallyStep = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useDispatch(); // 리덕스 디스패치 훅
 
   const { area, dateRange, title, previousSchedule, selectedDay, selectedContent } = location.state || {};
 
@@ -129,6 +151,22 @@ const GuideBookCreateFinallyStep = () => {
     });
   };
 
+  const handleCreateGuideBook = () => {
+    const newGuideBook = {
+      id: Date.now(), // 고유 ID 생성
+      title,
+      area,
+      dateRange: {
+        startDate: dateRange.startDate.toISOString(), // Date 객체를 문자열로 변환
+        endDate: dateRange.endDate.toISOString(), // Date 객체를 문자열로 변환
+      },
+      schedule,
+    };
+    dispatch(addGuideBook(newGuideBook)); // 리덕스 액션 디스패치
+    alert("가이드북이 생성되었습니다!");
+    navigate("/myGuideBooks"); // 생성 후 가이드북 리스트 페이지로 이동
+  };
+
   return (
     <Container>
       <Header>
@@ -160,6 +198,9 @@ const GuideBookCreateFinallyStep = () => {
           </ScheduleWrapper>
         </DayContainer>
       ))}
+      <FloatingButton onClick={handleCreateGuideBook}>
+        <FaSave /> {/* 저장 아이콘 사용 */}
+      </FloatingButton>
     </Container>
   );
 };
