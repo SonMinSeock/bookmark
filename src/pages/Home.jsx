@@ -157,7 +157,24 @@ const Home = () => {
 
   // 3. useEffect 정의
   useEffect(() => {
-    const handleScroll = () => {
+    // 페이지 로드 시 스크롤을 상단으로 초기화
+    window.scrollTo(0, 0);
+  }, []);
+
+  // 디바운스 함수 정의
+  const debounce = (func, delay) => {
+    let timeoutId;
+    return (...args) => {
+      if (timeoutId) clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        func(...args);
+      }, delay);
+    };
+  };
+
+  // useEffect에서 스크롤 핸들러에 디바운스 적용
+  useEffect(() => {
+    const handleScroll = debounce(() => {
       if (window.scrollY > 300) {
         setShowScrollToTop(true);
       } else {
@@ -169,7 +186,7 @@ const Home = () => {
           setPage((prevPage) => prevPage + 1);
         }
       }
-    };
+    }, 200); // 200ms 디바운스
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);

@@ -162,8 +162,34 @@ const Signup = () => {
     if (!isPasswordValid) setPasswordError(true);
 
     if (isNameValid && isEmailValid && isPasswordValid) {
-      // 회원가입 처리
+      // 회원가입 처리 (서버 요청은 주석 처리)
       console.log("회원가입 성공");
+
+      // fetch 요청을 사용하려면 주석 해제
+      /*
+      fetch("https://your-backend-api.com/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userEmail: email,
+          password: password,
+          provider: "LOCAL",
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log("회원가입 성공:", data);
+          navigate("/welcome");
+        })
+        .catch((error) => {
+          console.error("회원가입 실패:", error);
+        });
+      */
+
+      // 회원가입 성공 시 테스트용 페이지 이동
+      navigate("/welcome"); // 이 부분은 서버 응답을 받으면 이동하게 구현
     }
   };
 
