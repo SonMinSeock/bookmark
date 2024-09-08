@@ -81,7 +81,11 @@ const RootLayout = () => {
     location.pathname.startsWith("/myGuideBooks") ||
     location.pathname === "/guidebook/create/finally-step";
 
-  const isGuidebookCreatePath = location.pathname.startsWith("/guidebook/create");
+  const isGuidebookCreatePath =
+    location.pathname.startsWith("/guidebook/create") ||
+    location.pathname.startsWith("/welcome") ||
+    location.pathname.startsWith("/login") ||
+    location.pathname.startsWith("/signup");
 
   const handleNavigate = (path) => {
     navigate(path);

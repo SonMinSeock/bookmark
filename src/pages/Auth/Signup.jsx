@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { IoIosArrowBack } from "react-icons/io";
 import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
+import { signupUser } from "../../api/backendApi";
 
 const Container = styled.div`
   display: flex;
@@ -151,7 +152,7 @@ const Signup = () => {
     return password.length >= 8 && password.length <= 20;
   };
 
-  const onSubmit = (event) => {
+  const onSubmit = async (event) => {
     event.preventDefault();
     const isNameValid = name.trim().length > 0;
     const isEmailValid = validateEmail(email);
@@ -162,34 +163,29 @@ const Signup = () => {
     if (!isPasswordValid) setPasswordError(true);
 
     if (isNameValid && isEmailValid && isPasswordValid) {
-      // 회원가입 처리 (서버 요청은 주석 처리)
-      console.log("회원가입 성공");
-
-      // fetch 요청을 사용하려면 주석 해제
-      /*
-      fetch("https://your-backend-api.com/signup", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
+      try {
+        // 회원가입 처리
+        const userData = {
           userEmail: email,
           password: password,
           provider: "LOCAL",
-        }),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          console.log("회원가입 성공:", data);
-          navigate("/welcome");
-        })
-        .catch((error) => {
-          console.error("회원가입 실패:", error);
-        });
-      */
+        };
 
-      // 회원가입 성공 시 테스트용 페이지 이동
-      navigate("/welcome"); // 이 부분은 서버 응답을 받으면 이동하게 구현
+        // 실제로 백엔드 서버가 있을 경우 주석 해제 후 사용
+        /*
+        const data = await signupUser(userData);
+        console.log("회원가입 성공:", data);
+        */
+
+        // 백엔드 서버가 없을 때 테스트를 위한 가짜 응답 처리
+        const data = await signupUser(userData);
+        console.log("테스트용 회원가입 성공:", data);
+
+        // 회원가입 성공 후 페이지 이동
+        navigate("/welcome");
+      } catch (error) {
+        console.error("회원가입 실패:", error);
+      }
     }
   };
 
@@ -249,5 +245,4 @@ const Signup = () => {
     </Container>
   );
 };
-
 export default Signup;

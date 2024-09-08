@@ -5,6 +5,7 @@ import { IoChevronBackOutline } from "react-icons/io5";
 import noImage from "../../assets/noimage.png";
 import { useDispatch, useSelector } from "react-redux";
 import { addBookmark, removeBookmark } from "../../redux/bookmarkSlice";
+import { addBookmarkApi, removeBookmarkApi } from "../../api/backendApi"; // API 호출 모듈 가져오기
 
 const Container = styled.div`
   padding: 16px;
@@ -76,32 +77,38 @@ const Subtitle = styled.p`
   margin-bottom: 12px;
 `;
 
-// const Description = styled.p`
-//   font-size: 14px;
-//   font-weight: bold;
-//   color: #333;
-//   line-height: 1.7;
-//   margin: 0;
-// `;
-
 const Content = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
   const bookmarks = useSelector((state) => state.bookmarks); // 북마크 데이터 가져오기
+  const userId = "someUserId"; // 실제 유저 ID를 이 변수에 할당해야 함
 
   // 북마크 클릭핸들러
-  const handleBookmarkClick = (guide) => {
+  const handleBookmarkClick = async (guide) => {
     if (bookmarks.some((item) => item.contentid === guide.contentid)) {
+      // 북마크 삭제
       dispatch(removeBookmark(guide.contentid));
+      try {
+        await removeBookmarkApi(userId, guide.contentid); // API로 북마크 삭제 요청
+        console.log("북마크 삭제 성공");
+      } catch (error) {
+        console.error("북마크 삭제 실패:", error);
+      }
     } else {
+      // 북마크 추가
       dispatch(addBookmark(guide));
+      try {
+        await addBookmarkApi(userId, guide.contentid); // API로 북마크 추가 요청
+        console.log("북마크 추가 성공");
+      } catch (error) {
+        console.error("북마크 추가 실패:", error);
+      }
     }
   };
 
   // location.state가 없으면 오류 발생 가능성이 있으므로 철저히 방어
   if (!location.state || !location.state.content) {
-    // 오류가 발생하지 않도록 안전한 기본값을 제공하거나, 에러 페이지로 리디렉션
     return (
       <Container>
         <Header>

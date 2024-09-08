@@ -3,6 +3,7 @@ import { IoIosArrowBack } from "react-icons/io";
 import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { loginUser } from "../../api/backendApi";
 
 const Container = styled.div`
   display: flex;
@@ -107,6 +108,9 @@ const Login = () => {
   const [emailError, setEmailError] = useState(false);
   const [passwordError, setPasswordError] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [loginError, setLoginError] = useState(""); // 로그인 에러 메시지 상태 추가
+
+  const navigate = useNavigate();
 
   const onChangeEmail = (event) => {
     setEmail(event.target.value);
@@ -131,7 +135,7 @@ const Login = () => {
     return password.length >= 6;
   };
 
-  const onSubmit = (event) => {
+  const onSubmit = async (event) => {
     event.preventDefault();
     const isEmailValid = validateEmail(email);
     const isPasswordValid = validatePassword(password);
@@ -140,24 +144,24 @@ const Login = () => {
     if (!isPasswordValid) setPasswordError(true);
 
     if (isEmailValid && isPasswordValid) {
-      // 로그인 처리
-      console.log("로그인 성공");
+      // 모듈화된 API 호출
+      try {
+        const data = await loginUser(email, password); // backendApi.js의 loginUser 호출
+        console.log("로그인 성공", data);
+        navigate("/"); // 성공 시 메인 페이지로 이동
+      } catch (error) {
+        setLoginError("로그인에 실패했습니다. 다시 시도해주세요.");
+      }
     }
   };
 
   const isFormValid = validateEmail(email) && validatePassword(password);
 
-  const navigate = useNavigate();
-
-  const onNavigate = (path) => {
-    navigate(path);
-  };
-
   return (
     <Container>
       <Header>
         <BackButton>
-          <IoIosArrowBack size={28} onClick={() => onNavigate(-1)} />
+          <IoIosArrowBack size={28} onClick={() => navigate(-1)} />
         </BackButton>
         <Title>로그인하기</Title>
       </Header>
@@ -189,9 +193,8 @@ const Login = () => {
             </TogglePasswordButton>
           </PasswordInputContainer>
         </div>
-        <LoginButton disabled={!isFormValid} onClick={() => navigate("/")}>
-          로그인하기
-        </LoginButton>
+        <LoginButton disabled={!isFormValid}>로그인하기</LoginButton>
+        {loginError && <ErrorMessage>{loginError}</ErrorMessage>} {/* 로그인 에러 메시지 */}
       </Form>
     </Container>
   );

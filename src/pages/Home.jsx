@@ -30,6 +30,7 @@ import noImage from "../assets/noimage.png";
 import { useDispatch, useSelector } from "react-redux";
 import { addBookmark, removeBookmark } from "../redux/bookmarkSlice"; // slice에서 가져오기
 import { useNavigate } from "react-router-dom";
+import { addBookmarkApi, fetchBookmarks, removeBookmarkApi } from "../api/backendApi";
 
 Modal.setAppElement("#root");
 
@@ -103,6 +104,8 @@ const Home = () => {
     error: festivalError,
   } = useFestivals(selectedTag === "행사" ? area.code : null, startDate, endDate, page);
 
+  const userId = "12344";
+
   // 2. 핸들러 함수 정의
   const handleScrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -143,11 +146,23 @@ const Home = () => {
   };
 
   // 북마크 클릭핸들러
-  const handleBookmarkClick = (guide) => {
+  const handleBookmarkClick = async (guide) => {
     if (bookmarks.some((item) => item.contentid === guide.contentid)) {
       dispatch(removeBookmark(guide.contentid));
+      try {
+        await removeBookmarkApi(userId, guide.contentid); // API로 북마크 삭제 요청
+        console.log("북마크 삭제 성공");
+      } catch (error) {
+        console.error("북마크 삭제 실패:", error);
+      }
     } else {
       dispatch(addBookmark(guide));
+      try {
+        await addBookmarkApi(userId, guide.contentid); // API로 북마크 추가 요청
+        console.log("북마크 추가 성공");
+      } catch (error) {
+        console.error("북마크 추가 실패:", error);
+      }
     }
   };
 
@@ -156,10 +171,21 @@ const Home = () => {
   };
 
   // 3. useEffect 정의
+
   useEffect(() => {
     // 페이지 로드 시 스크롤을 상단으로 초기화
     window.scrollTo(0, 0);
   }, []);
+
+  useEffect(() => {
+    const loadBookmarks = async () => {
+      const bookmarkContentIds = await fetchBookmarks(userId); // API로 북마크 조회
+      bookmarkContentIds.forEach((contentId) => {
+        dispatch(addBookmark({ contentid: contentId }));
+      });
+    };
+    loadBookmarks(); // 페이지 로드 시 북마크 불러오기
+  }, [dispatch, userId]);
 
   // 디바운스 함수 정의
   const debounce = (func, delay) => {

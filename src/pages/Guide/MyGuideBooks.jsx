@@ -1,7 +1,10 @@
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
-import noImage from "../../assets/noimage.png"; // 대체 이미지 경로
+import noImage from "../../assets/noimage.png";
+import { fetchGuideBooksByUser } from "../../api/backendApi"; // API 호출 함수 임포트
+import { setGuideBooks } from "../../redux/guideBookSlice"; // 리덕스 액션 임포트
 
 const Container = styled.div`
   padding: 16px;
@@ -20,7 +23,7 @@ const GuideBookContainer = styled.div`
 
 const ImagePlaceholder = styled.div`
   width: 100%;
-  padding-top: 56.25%; /* 16:9 비율을 유지 */
+  padding-top: 56.25%;
   background-color: #e0e0e0;
   border-radius: 12px;
   margin-bottom: 8px;
@@ -68,38 +71,55 @@ const NoGuidebooksMessage = styled.div`
 
 const MyGuideBooks = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [loading, setLoading] = useState(true);
   const guidebooks = useSelector((state) => state.guideBook.books) || [];
+  const userId = 1; // 실제 로그인한 유저 ID로 교체해야 함
+
+  useEffect(() => {
+    const loadGuideBooks = async () => {
+      setLoading(true);
+      try {
+        const fetchedGuideBooks = await fetchGuideBooksByUser(userId);
+        dispatch(setGuideBooks(fetchedGuideBooks)); // 가이드북 데이터를 리덕스 스토어에 저장
+      } catch (error) {
+        console.error("Failed to load guidebooks", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadGuideBooks();
+  }, [dispatch, userId]);
 
   const handleNavigate = (id) => {
     navigate(`/myGuideBooks/${id}`);
   };
 
-  console.log(guidebooks);
-
-  const getFirstImage = (schedule) => {
-    for (let day of Object.keys(schedule)) {
-      for (let item of schedule[day]) {
-        if (item.firstimage) {
-          return item.firstimage;
-        }
+  const getFirstImage = (days) => {
+    for (let day of days) {
+      if (day.contentIds.length > 0) {
+        return day.contentIds[0].firstimage || noImage; // 첫 번째 이미지가 있으면 반환, 없으면 대체 이미지
       }
     }
-    return noImage; // 모든 날의 이미지가 없는 경우 대체 이미지 반환
+    return noImage;
   };
 
   return (
     <Container>
-      {guidebooks.length > 0 ? (
+      {loading ? (
+        <NoGuidebooksMessage>가이드북을 불러오는 중...</NoGuidebooksMessage>
+      ) : guidebooks.length > 0 ? (
         guidebooks.map((guidebook, index) => (
           <GuideBookContainer key={index} onClick={() => handleNavigate(guidebook.id)}>
             <ImagePlaceholder>
-              <img src={getFirstImage(guidebook.schedule)} alt={guidebook.title} />
+              <img src={getFirstImage(guidebook.days)} alt={guidebook.title} />
             </ImagePlaceholder>
             <GuideInfo>
               <GuideTitle>{guidebook.title}</GuideTitle>
               <GuideSubtitle>
-                {guidebook.area}, {new Date(guidebook.dateRange.startDate).toLocaleDateString()} ~{" "}
-                {new Date(guidebook.dateRange.endDate).toLocaleDateString()}
+                {guidebook.destination}, {new Date(guidebook.startDate).toLocaleDateString()} ~{" "}
+                {new Date(guidebook.endDate).toLocaleDateString()}
               </GuideSubtitle>
             </GuideInfo>
           </GuideBookContainer>
