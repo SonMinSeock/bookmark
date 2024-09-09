@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useLocation, useNavigate } from "react-router-dom";
 import noImage from "../../assets/noimage.png";
@@ -55,19 +55,19 @@ const DayTitle = styled.h2`
 
 const ScheduleWrapper = styled.div`
   display: flex;
-  align-items: center;
+  flex-direction: column; // 세로로 배치
 `;
 
 const ScheduleContainer = styled.div`
   display: flex;
-  overflow-x: auto;
+  overflow-x: auto; // 가로 스크롤 활성화
   white-space: nowrap;
-  max-width: calc(100% - 120px);
-  margin-right: 1rem;
+  max-width: 100%;
+  margin-bottom: 16px; // 일정과 일정 추가 버튼 사이에 간격 추가
 `;
 
 const ScheduleBox = styled.div`
-  position: relative; // 아이콘을 이미지 내부에 위치시키기 위해 필요
+  position: relative;
   min-width: 100px;
   height: 100px;
   background-color: #e0e0e0;
@@ -83,6 +83,29 @@ const ScheduleBox = styled.div`
   &:hover {
     background-color: #ccc;
   }
+
+  &.dragging {
+    opacity: 0.5; // 드래그 중인 항목 투명도
+    border: 2px dashed #007aff; // 드래그 중인 항목 강조
+  }
+
+  &.dropTarget {
+    border: 2px solid #ff4d4f; // 드롭할 수 있는 위치 강조
+  }
+`;
+
+const AddBox = styled.div`
+  background-color: #007aff;
+  color: white;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 60px;
+  border-radius: 12px;
+  cursor: pointer;
+  margin-top: 16px; // 일정과의 간격 추가
 `;
 
 const DeleteIcon = styled(AiOutlineClose)`
@@ -102,12 +125,6 @@ const ImageBox = styled.img`
   height: 100px;
   border-radius: 8px;
   object-fit: cover;
-`;
-
-const AddBox = styled(ScheduleBox)`
-  background-color: #ddd;
-  color: #333;
-  flex-shrink: 0;
 `;
 
 const FloatingButton = styled.button`
@@ -180,17 +197,43 @@ const GuideBookCreateFinallyStep = () => {
     });
   };
 
-  // Drag 시작
+  // ScheduleBox의 스타일링 수정
   const handleDragStart = (day, contentId) => {
     setDraggedItem({ day, contentId });
+
+    // 드래그 중인 항목에 클래스를 추가하여 스타일링 적용
+    const element = document.querySelector(`[data-contentid="${contentId}"]`);
+    if (element) {
+      element.classList.add("dragging");
+    }
   };
 
-  // 드래그된 요소를 다른 요소 위로 올릴 때 (마우스를 다른 요소 위로 이동 중일 때)
-  const handleDragOver = (e) => {
-    e.preventDefault(); // 기본 동작 방지
+  const handleDragOver = (e, targetContentId = null) => {
+    e.preventDefault();
+
+    // 드롭할 위치 강조
+    const element = document.querySelector(`[data-contentid="${targetContentId}"]`);
+    if (element) {
+      element.classList.add("dropTarget");
+    }
   };
 
-  // 드롭 시 처리
+  const handleDragEnd = () => {
+    // 드래그가 끝난 후 드래그 관련 스타일 제거
+    const draggingElement = document.querySelector(".dragging");
+    if (draggingElement) {
+      draggingElement.classList.remove("dragging");
+    }
+
+    // 드롭 대상 스타일 제거
+    const dropTargetElement = document.querySelector(".dropTarget");
+    if (dropTargetElement) {
+      dropTargetElement.classList.remove("dropTarget");
+    }
+
+    setDraggedItem(null); // 드래그된 항목 상태 초기화
+  };
+
   const handleDrop = (day, targetContentId = null) => {
     if (!draggedItem) return;
 
@@ -198,8 +241,16 @@ const GuideBookCreateFinallyStep = () => {
     const sourceDay = newSchedule[draggedItem.day];
     const targetDay = newSchedule[day];
 
-    // 다른 Day로 이동하는 경우만 허용
-    if (draggedItem.day !== day) {
+    // 같은 Day 내에서 순서 변경
+    if (draggedItem.day === day) {
+      const draggedIndex = sourceDay.findIndex((item) => item.contentid === draggedItem.contentId);
+      const targetIndex = sourceDay.findIndex((item) => item.contentid === targetContentId);
+
+      if (draggedIndex !== -1 && targetIndex !== -1 && draggedIndex !== targetIndex) {
+        const [movedItem] = sourceDay.splice(draggedIndex, 1);
+        sourceDay.splice(targetIndex, 0, movedItem);
+      }
+    } else {
       const draggedIndex = sourceDay.findIndex((item) => item.contentid === draggedItem.contentId);
       if (draggedIndex !== -1) {
         const [movedItem] = sourceDay.splice(draggedIndex, 1);
@@ -213,7 +264,15 @@ const GuideBookCreateFinallyStep = () => {
     }
 
     setSchedule(newSchedule);
-    setDraggedItem(null);
+    handleDragEnd(); // 드롭 후 스타일 제거
+  };
+
+  const handleDragLeave = (targetContentId = null) => {
+    // 드롭할 위치에서 벗어나면 스타일 제거
+    const element = document.querySelector(`[data-contentid="${targetContentId}"]`);
+    if (element) {
+      element.classList.remove("dropTarget");
+    }
   };
 
   // 일정 삭제
@@ -271,8 +330,11 @@ const GuideBookCreateFinallyStep = () => {
                   key={idx}
                   draggable
                   onDragStart={() => handleDragStart(day, item.contentid)}
-                  onDragOver={handleDragOver}
+                  onDragOver={(e) => handleDragOver(e, item.contentid)}
+                  onDragLeave={() => handleDragLeave(item.contentid)} // 드래그가 떠날 때 호출
                   onDrop={() => handleDrop(day, item.contentid)}
+                  onDragEnd={handleDragEnd} // 드래그 끝날 때 스타일 제거
+                  data-contentid={item.contentid} // 드래그 스타일 적용을 위한 데이터 속성
                 >
                   <ImageBox src={item.firstimage || item.firstimage2 || noImage} alt={item.title} />
                   <DeleteIcon onClick={(e) => handleDelete(day, item.contentid, e)} />
