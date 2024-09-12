@@ -61,9 +61,10 @@ const FloatingAddButton = styled.button`
   cursor: pointer;
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
   z-index: 1500; /* Scroll to top button보다 위에 위치 */
-  transition: transform 0.3s ease;
+  transition: all 0.3s ease;
 
   &:hover {
+    background-color: #f23e3e;
     transform: scale(1.1);
   }
 `;
