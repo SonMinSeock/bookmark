@@ -28,9 +28,10 @@ import { useInitialTravels, useTravels, useFestivals } from "../hooks/useTravelQ
 import ClipLoader from "react-spinners/ClipLoader"; // 로딩 스피너 추가
 import noImage from "../assets/noimage.png";
 import { useDispatch, useSelector } from "react-redux";
-import { addBookmark, removeBookmark } from "../redux/bookmarkSlice"; // slice에서 가져오기
-import { useNavigate } from "react-router-dom";
+import { addBookmark, removeBookmark, resetBookmarks } from "../redux/bookmarkSlice"; // slice에서 가져오기
+import { useLocation, useNavigate } from "react-router-dom";
 import { addBookmarkApi, fetchBookmarks, removeBookmarkApi } from "../api/backendApi";
+import { fetchContentDetail } from "../api/travelApi";
 
 Modal.setAppElement("#root");
 
@@ -66,6 +67,8 @@ const tagTypes = {
 
 const Home = () => {
   // 1. 상태 관리
+  const userId = useSelector((state) => state.auth.userId);
+  const token = useSelector((state) => state.auth.token);
   const [area, setArea] = useState("");
   const [showDateRange, setShowDateRange] = useState(false);
   const [selectedRange, setSelectedRange] = useState([
@@ -104,7 +107,7 @@ const Home = () => {
     error: festivalError,
   } = useFestivals(selectedTag === "행사" ? area.code : null, startDate, endDate, page);
 
-  const userId = "12344";
+  const location = useLocation();
 
   // 2. 핸들러 함수 정의
   const handleScrollToTop = () => {
@@ -147,22 +150,67 @@ const Home = () => {
 
   // 북마크 클릭핸들러
   const handleBookmarkClick = async (guide) => {
-    if (bookmarks.some((item) => item.contentid === guide.contentid)) {
-      dispatch(removeBookmark(guide.contentid));
-      try {
-        await removeBookmarkApi(userId, guide.contentid); // API로 북마크 삭제 요청
+    // userId 또는 token이 없을 경우 welcome 페이지로 리다이렉트
+    if (!userId || !token) {
+      console.log("로그인되지 않은 상태에서 북마크를 시도하였습니다.");
+      navigate("/welcome"); // 로그인 페이지 또는 웰컴 페이지로 리다이렉트
+      return;
+    }
+
+    // API 호출하여 overview 데이터를 가져옴
+    let overview = "";
+    try {
+      const detailData = await fetchContentDetail(guide.contentid); // 상세 조회 API 호출
+      overview = detailData?.overview || "상세내용 없음"; // overview 값 설정
+    } catch (error) {
+      console.error("상세 조회 API 호출 실패:", error);
+    }
+
+    console.log("HandleBookmark 핸들러 북마크 할 data 확인 : ", guide);
+    // 백엔드로 보낼 데이터 구성
+    const bookmarkData = {
+      userId, // 현재 로그인된 사용자 ID
+      contentid: guide.contentid, // 콘텐츠 ID
+      title: guide.title || "제목 없음", // 제목
+      firstimage: guide.firstimage || "", // 첫 번째 이미지 URL (없으면 빈 문자열)
+      firstimage2: guide.firstimage2 || "", // 두 번째 이미지 URL (없으면 빈 문자열)
+      areacode: guide.areacode || "", // 지역 코드
+      addr1: guide.addr1 || "주소 정보 없음", // 주소 (없으면 기본값)
+      contenttypeid: guide.contenttypeid || "", // 콘텐츠 타입 (관광, 음식점 등)
+      tel: guide.tel || "", // 전화번호 (없으면 빈 문자열)
+      eventenddate: guide.eventenddate || null, // 행사 끝나는 날짜 (없으면 null)
+      eventstartdate: guide.eventstartdate || null, // 행사 시작 날짜 (없으면 null)
+      overview, // 상세 조회 API에서 가져온 overview
+    };
+
+    console.log("백엔드로 보낼 북마크 데이터:", bookmarkData);
+
+    try {
+      if (bookmarks.some((item) => item.contentid === guide.contentid)) {
+        // 북마크 삭제 로직
+        dispatch(removeBookmark(guide.contentid));
+
+        // 나중에 사용할 백엔드 호출 (주석 처리)
+        /*
+        await removeBookmarkApi(userId, guide.contentid, token); // API로 북마크 삭제 요청
         console.log("북마크 삭제 성공");
-      } catch (error) {
-        console.error("북마크 삭제 실패:", error);
-      }
-    } else {
-      dispatch(addBookmark(guide));
-      try {
-        await addBookmarkApi(userId, guide.contentid); // API로 북마크 추가 요청
+        */
+
+        console.log("북마크 삭제 로컬 상태 업데이트 성공");
+      } else {
+        // 북마크 추가 로직
+        dispatch(addBookmark(guide));
+
+        // 나중에 사용할 백엔드 호출 (주석 처리)
+        /*
+        await addBookmarkApi(userId, bookmarkData, token); // API로 북마크 추가 요청
         console.log("북마크 추가 성공");
-      } catch (error) {
-        console.error("북마크 추가 실패:", error);
+        */
+
+        console.log("북마크 추가 로컬 상태 업데이트 성공");
       }
+    } catch (error) {
+      console.error("북마크 처리 실패:", error);
     }
   };
 
@@ -172,6 +220,7 @@ const Home = () => {
 
   // 3. useEffect 정의
 
+  console.log(userId, token);
   useEffect(() => {
     // 페이지 로드 시 스크롤을 상단으로 초기화
     window.scrollTo(0, 0);
@@ -179,13 +228,29 @@ const Home = () => {
 
   useEffect(() => {
     const loadBookmarks = async () => {
-      const bookmarkContentIds = await fetchBookmarks(userId); // API로 북마크 조회
-      bookmarkContentIds.forEach((contentId) => {
-        dispatch(addBookmark({ contentid: contentId }));
-      });
+      if (!userId || !token) {
+        console.log("로그인되지 않은 상태에서 북마크 조회를 시도하지 않습니다.");
+        return; // userId 또는 token이 없을 경우 함수 종료
+      }
+
+      try {
+        const bookmarkContentIds = await fetchBookmarks(userId, token); // API로 북마크 조회
+        dispatch(resetBookmarks()); // 기존 북마크 초기화
+
+        bookmarkContentIds.forEach((contentId) => {
+          const bookmarkDetail = displayedTravels.find((item) => item.contentid === contentId.contentId);
+          if (bookmarkDetail) {
+            dispatch(addBookmark(bookmarkDetail));
+          }
+        });
+      } catch (error) {
+        console.error("Error loading bookmarks:", error);
+      }
     };
-    loadBookmarks(); // 페이지 로드 시 북마크 불러오기
-  }, [dispatch, userId]);
+
+    // 페이지 이동 시마다 북마크 불러오기
+    loadBookmarks();
+  }, [location, dispatch, userId, token, displayedTravels]);
 
   // 디바운스 함수 정의
   const debounce = (func, delay) => {

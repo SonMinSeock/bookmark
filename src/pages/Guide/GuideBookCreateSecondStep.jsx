@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { IoChevronBackOutline } from "react-icons/io5";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const Container = styled.div`
   padding: 16px;
@@ -77,6 +78,8 @@ const GuideBookCreateSecondStep = () => {
   const location = useLocation();
   const { area, dateRange } = location.state || {}; // area와 dateRange를 받아옴
   const [title, setTitle] = useState("");
+  const userId = useSelector((state) => state.auth.userId);
+  const token = useSelector((state) => state.auth.token);
 
   const handleNext = () => {
     // handle next steps, for example, saving the guide
@@ -85,6 +88,14 @@ const GuideBookCreateSecondStep = () => {
     console.log("Title:", title);
     navigate("/guidebook/create/finally-step", { state: { title, area, dateRange } });
   };
+
+  useEffect(() => {
+    if (!userId || !token) {
+      // 로그인하지 않은 경우 welcome 페이지로 리다이렉트
+      navigate("/welcome");
+      return;
+    }
+  }, [userId, token, navigate]);
 
   return (
     <Container>

@@ -2,11 +2,12 @@ import styled from "styled-components";
 import { FaCalendarAlt } from "react-icons/fa";
 import { IoChevronBackOutline } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DateRange } from "react-date-range";
 import Modal from "react-modal";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
+import { useSelector } from "react-redux";
 
 const Container = styled.div`
   padding: 16px;
@@ -121,6 +122,8 @@ const areaNames = {
 };
 
 const GuideBookCreateFirstStep = () => {
+  const userId = useSelector((state) => state.auth.userId);
+  const token = useSelector((state) => state.auth.token);
   const [showDateRange, setShowDateRange] = useState(false);
   const [selectedRange, setSelectedRange] = useState([
     {
@@ -157,6 +160,14 @@ const GuideBookCreateFirstStep = () => {
       return `0000.00.00`;
     }
   };
+
+  useEffect(() => {
+    if (!userId || !token) {
+      // 로그인하지 않은 경우 welcome 페이지로 리다이렉트
+      navigate("/welcome");
+      return;
+    }
+  }, [userId, token, navigate]);
 
   return (
     <Container>

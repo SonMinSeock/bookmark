@@ -5,7 +5,7 @@ import { FaRegBookmark, FaBookmark, FaBookOpen, FaPlus } from "react-icons/fa";
 import { IoHomeOutline, IoHomeSharp } from "react-icons/io5";
 
 const LayoutContainer = styled.div`
-  height: ${location.pathname === "/welcome" ? "100vh" : null};
+  height: ${(props) => (props.$fullHeight ? props.$fullHeight : null)};
 
   @media (min-width: 393px) {
     max-width: 393px;
@@ -93,7 +93,7 @@ const RootLayout = () => {
   };
 
   return (
-    <LayoutContainer>
+    <LayoutContainer $fullHeight={location.pathname === "/welcome" || location.pathname === "/login" ? "100vh" : null}>
       <Outlet />
       {!isGuidebookCreatePath && (
         <FloatingAddButton onClick={() => handleNavigate("/guidebook/create/first-step")}>

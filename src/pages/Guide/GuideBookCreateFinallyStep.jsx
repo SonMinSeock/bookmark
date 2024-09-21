@@ -7,6 +7,7 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import DraggableBox from "../../components/DragDrop/DraggableBox";
 import DroppableContainer from "../../components/DragDrop/DroppableContainer";
 import { createGuideBookApi } from "../../api/backendApi";
+import { useSelector } from "react-redux";
 
 const Container = styled.div`
   padding: 16px;
@@ -95,8 +96,9 @@ const FloatingButton = styled.button`
 const GuideBookCreateFinallyStep = () => {
   const location = useLocation();
   const navigate = useNavigate();
-
   const { area, dateRange, title, previousSchedule, selectedDay, selectedContent } = location.state || {};
+  const userId = useSelector((state) => state.auth.userId);
+  const token = useSelector((state) => state.auth.token);
 
   const calculateDays = (startDate, endDate) => {
     const start = new Date(startDate);
@@ -179,7 +181,7 @@ const GuideBookCreateFinallyStep = () => {
 
   const handleCreateGuideBook = async () => {
     const newGuideBook = {
-      userId: 1,
+      userId,
       title,
       destination: area,
       startDate: dateRange.startDate,
@@ -188,7 +190,7 @@ const GuideBookCreateFinallyStep = () => {
     };
 
     try {
-      const response = await createGuideBookApi(newGuideBook);
+      const response = await createGuideBookApi(newGuideBook, token);
       alert("가이드북이 성공적으로 생성되었습니다!");
       navigate("/myGuideBooks");
     } catch (error) {
@@ -196,6 +198,14 @@ const GuideBookCreateFinallyStep = () => {
       console.error(error);
     }
   };
+
+  useEffect(() => {
+    if (!userId || !token) {
+      // 로그인하지 않은 경우 welcome 페이지로 리다이렉트
+      navigate("/welcome");
+      return;
+    }
+  }, [userId, token, navigate]);
 
   return (
     <DndProvider backend={HTML5Backend}>

@@ -52,6 +52,8 @@ const BookMark = () => {
     navigate(`/contents/${content.contentid}`, { state: { content } });
   };
 
+  console.log(bookmarks);
+
   return (
     <Container>
       <ImageGrid>

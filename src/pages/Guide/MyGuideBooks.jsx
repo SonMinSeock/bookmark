@@ -74,13 +74,20 @@ const MyGuideBooks = () => {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
   const guidebooks = useSelector((state) => state.guideBook.books) || [];
-  const userId = 1; // 실제 로그인한 유저 ID로 교체해야 함
+  const userId = useSelector((state) => state.auth.userId);
+  const token = useSelector((state) => state.auth.token);
 
   useEffect(() => {
+    if (!userId || !token) {
+      // 로그인하지 않은 경우 welcome 페이지로 리다이렉트
+      navigate("/welcome");
+      return;
+    }
+
     const loadGuideBooks = async () => {
       setLoading(true);
       try {
-        const fetchedGuideBooks = await fetchGuideBooksByUser(userId);
+        const fetchedGuideBooks = await fetchGuideBooksByUser(userId, token);
         dispatch(setGuideBooks(fetchedGuideBooks)); // 가이드북 데이터를 리덕스 스토어에 저장
       } catch (error) {
         console.error("Failed to load guidebooks", error);

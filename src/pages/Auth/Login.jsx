@@ -4,6 +4,8 @@ import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { loginUser } from "../../api/backendApi";
+import { setAuthData } from "../../redux/authSlice";
+import { useDispatch } from "react-redux";
 
 const Container = styled.div`
   display: flex;
@@ -103,6 +105,7 @@ const LoginButton = styled.button`
 `;
 
 const Login = () => {
+  const dispatch = useDispatch();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState(false);
@@ -146,11 +149,16 @@ const Login = () => {
     if (isEmailValid && isPasswordValid) {
       // 모듈화된 API 호출
       try {
-        const data = await loginUser(email, password); // backendApi.js의 loginUser 호출
-        console.log("로그인 성공", data);
+        const { userId, token } = await loginUser(email, password); // backendApi.js의 loginUser 호출
+        dispatch(setAuthData({ userId, token })); // Update Redux state
+
         navigate("/"); // 성공 시 메인 페이지로 이동
       } catch (error) {
-        setLoginError("로그인에 실패했습니다. 다시 시도해주세요.");
+        if (error.message === "Unauthorized") {
+          setLoginError("아이디 또는 비밀번호가 잘못되었습니다."); // 401 에러에 대한 사용자에게 보여줄 메시지
+        } else {
+          setLoginError("로그인에 실패했습니다. 다시 시도해주세요."); // 일반 에러 메시지
+        }
       }
     }
   };

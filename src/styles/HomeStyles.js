@@ -104,12 +104,17 @@ export const ContentHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+
+  /* 북마크 아이콘 크기 고정 */
   & .bookmark-icon {
+    font-size: 24px; /* 아이콘 크기를 고정 */
     cursor: pointer;
   }
+
   & .bookmark-icon:hover {
     color: #007aff;
   }
+
   & .selected {
     color: #007aff;
   }
@@ -120,6 +125,10 @@ export const Title = styled.h2`
   font-weight: bold;
   margin: 0;
   margin-bottom: 8px;
+  white-space: nowrap; /* 타이틀이 긴 경우 말줄임표로 표시 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: calc(100% - 40px); /* 아이콘 공간을 제외한 타이틀 너비 */
 `;
 
 export const Subtitle = styled.p`

@@ -166,9 +166,9 @@ const Signup = () => {
       try {
         // 회원가입 처리
         const userData = {
+          username: name,
           userEmail: email,
           password: password,
-          provider: "LOCAL",
         };
 
         // 실제로 백엔드 서버가 있을 경우 주석 해제 후 사용

@@ -58,3 +58,27 @@ export async function fetchFestivalData(areaCode, startDate, endDate, page = 1) 
     throw new Error("Failed to fetch festival data");
   }
 }
+
+// travelApi.js 상세조회 API
+export async function fetchContentDetail(contentId) {
+  const apiConfig = {
+    apiKey: import.meta.env.VITE_AREA_TRAVLE,
+  };
+
+  try {
+    const response = await fetch(
+      `http://apis.data.go.kr/B551011/JpnService1/detailCommon1?serviceKey=${apiConfig.apiKey}&numOfRows=10&pageNo=1&MobileOS=ETC&MobileApp=AppTest&contentId=${contentId}&overviewYN=Y&_type=json`
+    );
+
+    const res = await response.json();
+    if (res?.response?.body?.items?.item) {
+      return res.response.body.items.item[0]; // 상세 정보는 배열로 리턴되므로 첫 번째 아이템을 반환
+    } else {
+      console.error("No detailed information found in the response");
+      return null;
+    }
+  } catch (error) {
+    console.error("Error fetching content detail:", error);
+    throw new Error("Failed to fetch content detail");
+  }
+}

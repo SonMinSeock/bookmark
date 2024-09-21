@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import { useSelector } from "react-redux";
 import { DndProvider } from "react-dnd";
@@ -8,6 +8,7 @@ import { TouchBackend } from "react-dnd-touch-backend";
 import { isMobile } from "react-device-detect"; // react-device-detect 사용
 import DraggableBox from "../../components/DragDrop/DraggableBox";
 import DroppableContainer from "../../components/DragDrop/DroppableContainer";
+import { updateGuidebookDaysApi } from "../../api/backendApi";
 
 // 스타일링 추가
 const Container = styled.div`
@@ -85,14 +86,16 @@ const MyGuideBookDetail = () => {
   // 모바일 기기인지 확인 후 적절한 백엔드 선택
   const backend = isMobile ? TouchBackend : HTML5Backend;
   const { id } = useParams();
-
   // Redux에서 가져온 데이터
   const guidebooks = useSelector((state) => state.guideBook.books);
   const guidebookFromRedux = guidebooks.find((book) => book.id === parseInt(id));
+  const userId = useSelector((state) => state.auth.userId);
+  const token = useSelector((state) => state.auth.token);
 
   const [guidebook, setGuidebook] = useState(JSON.parse(JSON.stringify(guidebookFromRedux)));
   const [isModified, setIsModified] = useState(false); // 변경 여부 추적
   const [isSaving, setIsSaving] = useState(false); // 저장 중 상태
+  const navigate = useNavigate();
 
   const moveContent = (draggedItem, targetIndex, targetDayIndex) => {
     const { dayIndex: sourceDayIndex, index: sourceIndex } = draggedItem;
@@ -149,7 +152,7 @@ const MyGuideBookDetail = () => {
 
     try {
       // 여기에 실제 백엔드 API 호출을 추가합니다.
-      // await updateGuidebookDaysApi(guidebook.id, daysData);
+      await updateGuidebookDaysApi(guidebook.id, daysData, token);
       console.log("백엔드로 업데이트 성공");
       alert("수정사항이 저장되었습니다!");
       setIsModified(false); // 저장이 완료되면 버튼 비활성화
@@ -160,6 +163,14 @@ const MyGuideBookDetail = () => {
       setIsSaving(false); // 저장 완료 상태로 변경
     }
   };
+
+  useEffect(() => {
+    if (!userId || !token) {
+      // 로그인하지 않은 경우 welcome 페이지로 리다이렉트
+      navigate("/welcome");
+      return;
+    }
+  }, [userId, token, navigate]);
 
   return (
     <DndProvider backend={backend}>
