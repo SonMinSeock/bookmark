@@ -8,7 +8,9 @@ import Modal from "react-modal";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
 import { useSelector } from "react-redux";
+import { DateDisplay } from "../../styles/HomeStyles";
 
+// 컨테이너 스타일
 const Container = styled.div`
   padding: 16px;
   background-color: #fff;
@@ -19,12 +21,21 @@ const Container = styled.div`
   justify-content: space-between;
 `;
 
+// 헤더 스타일
 const Header = styled.header`
   display: flex;
   align-items: center;
   padding-bottom: 16px;
 `;
 
+const Title = styled.h1`
+  font-size: 22px;
+  font-weight: bold;
+  line-height: 28px;
+  margin-bottom: 1rem;
+`;
+
+// 뒤로가기 버튼 스타일
 const BackButton = styled.button`
   background: none;
   border: none;
@@ -35,6 +46,7 @@ const BackButton = styled.button`
   align-items: center;
 `;
 
+// 검색 박스 스타일
 const SearchBox = styled.div`
   background-color: white;
   padding: 16px;
@@ -42,6 +54,7 @@ const SearchBox = styled.div`
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
+// 검색 드롭다운 스타일
 const SearchSelect = styled.select`
   width: 100%;
   padding: 12px;
@@ -51,12 +64,9 @@ const SearchSelect = styled.select`
   margin-bottom: 12px;
   background-color: #f0f0f0;
   color: #333;
-
-  &::placeholder {
-    color: #aaa;
-  }
 `;
 
+// 날짜 박스 스타일
 const DateBox = styled.div`
   display: flex;
   align-items: center;
@@ -64,17 +74,22 @@ const DateBox = styled.div`
   background-color: #f0f0f0;
   border-radius: 8px;
   color: #aaa;
-`;
-
-const DateDisplay = styled.div`
-  display: flex;
-  align-items: center;
-  padding: 12px;
-  border-radius: 8px;
-  color: #aaa;
   cursor: pointer;
 `;
 
+// 입력 박스 스타일
+const Input = styled.input`
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  box-sizing: border-box;
+  margin-bottom: 12px;
+  background-color: #f0f0f0;
+`;
+
+// 버튼 스타일
 const Button = styled.button`
   background-color: #007aff;
   color: white;
@@ -85,7 +100,7 @@ const Button = styled.button`
   font-weight: bold;
   cursor: pointer;
   width: 100%;
-  margin-top: auto; /* 버튼을 하단에 배치 */
+  margin-top: auto;
 `;
 
 const CloseButton = styled.button`
@@ -121,7 +136,7 @@ const areaNames = {
   39: "제주특별자치도",
 };
 
-const GuideBookCreateFirstStep = () => {
+const GuideBookCreate = () => {
   const userId = useSelector((state) => state.auth.userId);
   const token = useSelector((state) => state.auth.token);
   const [showDateRange, setShowDateRange] = useState(false);
@@ -133,16 +148,16 @@ const GuideBookCreateFirstStep = () => {
     },
   ]);
   const [selectedArea, setSelectedArea] = useState("");
+  const [title, setTitle] = useState("");
   const navigate = useNavigate();
 
   const handleNext = () => {
-    if (selectedArea && selectedRange[0].startDate && selectedRange[0].endDate) {
-      // 선택된 지역과 날짜 범위를 다음 스텝으로 넘길 수 있습니다.
-      navigate("/guidebook/create/second-step", {
-        state: { area: selectedArea, dateRange: selectedRange[0] },
+    if (selectedArea && selectedRange[0].startDate && selectedRange[0].endDate && title) {
+      navigate("/guidebook/create/finally-step", {
+        state: { title, area: selectedArea, dateRange: selectedRange[0] },
       });
     } else {
-      alert("지역과 일정을 선택해주세요.");
+      alert("모든 필드를 작성해주세요.");
     }
   };
 
@@ -156,16 +171,13 @@ const GuideBookCreateFirstStep = () => {
       const month = String(date.getMonth() + 1).padStart(2, "0");
       const day = String(date.getDate()).padStart(2, "0");
       return `${year}.${month}.${day}`;
-    } else {
-      return `0000.00.00`;
     }
+    return "0000.00.00";
   };
 
   useEffect(() => {
     if (!userId || !token) {
-      // 로그인하지 않은 경우 welcome 페이지로 리다이렉트
       navigate("/welcome");
-      return;
     }
   }, [userId, token, navigate]);
 
@@ -176,7 +188,17 @@ const GuideBookCreateFirstStep = () => {
           <IoChevronBackOutline />
         </BackButton>
       </Header>
+      <Title>
+        가이드북에 대해
+        <br /> 정보를 작성해주세요.
+      </Title>
       <SearchBox>
+        <Input
+          type="text"
+          placeholder="가이드북 제목을 입력하세요"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
         <SearchSelect
           value={selectedArea}
           onChange={(e) => setSelectedArea(e.target.value)}
@@ -191,8 +213,16 @@ const GuideBookCreateFirstStep = () => {
             </option>
           ))}
         </SearchSelect>
-        <DateBox>
-          <DateDisplay onClick={() => setShowDateRange(true)}>
+        {/* <DateBox onClick={() => setShowDateRange(true)}>
+          <FaCalendarAlt style={{ marginRight: "8px" }} />
+          {`${formatDateDisplay(selectedRange[0].startDate)} ~ ${formatDateDisplay(selectedRange[0].endDate)}`}
+        </DateBox> */}
+        <DateBox
+          onClick={() => {
+            setShowDateRange(true);
+          }}
+        >
+          <DateDisplay>
             <FaCalendarAlt style={{ marginRight: "8px" }} />
             {`${formatDateDisplay(selectedRange[0].startDate)} ~ ${formatDateDisplay(selectedRange[0].endDate)}`}
           </DateDisplay>
@@ -237,4 +267,4 @@ const GuideBookCreateFirstStep = () => {
   );
 };
 
-export default GuideBookCreateFirstStep;
+export default GuideBookCreate;

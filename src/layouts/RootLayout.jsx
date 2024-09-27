@@ -86,7 +86,8 @@ const RootLayout = () => {
     location.pathname.startsWith("/guidebook/create") ||
     location.pathname.startsWith("/welcome") ||
     location.pathname.startsWith("/login") ||
-    location.pathname.startsWith("/signup");
+    location.pathname.startsWith("/signup") ||
+    location.pathname.startsWith("/contents");
 
   const handleNavigate = (path) => {
     navigate(path);

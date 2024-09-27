@@ -315,7 +315,7 @@ const Home = () => {
 
   return (
     <Container>
-      <SearchBox>
+      <SearchBox $pdSize="pd-md">
         <SearchSelect onChange={handleAreaInput} value={JSON.stringify(area)}>
           <option value="">어디로 떠나세요?</option>
           {Object.entries(areaNames).map(([code, areaName]) => (
@@ -324,12 +324,12 @@ const Home = () => {
             </option>
           ))}
         </SearchSelect>
-        <DateBox>
-          <DateDisplay
-            onClick={() => {
-              setShowDateRange(true);
-            }}
-          >
+        <DateBox
+          onClick={() => {
+            setShowDateRange(true);
+          }}
+        >
+          <DateDisplay>
             <FaCalendarAlt style={{ marginRight: "8px" }} />
             {`${formatDateDisplay(selectedRange[0].startDate)} ~ ${formatDateDisplay(selectedRange[0].endDate)}`}
           </DateDisplay>

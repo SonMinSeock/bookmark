@@ -5,13 +5,12 @@ import Login from "../pages/Auth/Login";
 import Signup from "../pages/Auth/Signup";
 import Home from "../pages/Home";
 import Content from "../pages/Content/Content";
-import GuideBookCreateFirstStep from "../pages/Guide/GuideBookCreateFirstStep";
-import GuideBookCreateSecondStep from "../pages/Guide/GuideBookCreateSecondStep";
 import GuideBookCreateFinallyStep from "../pages/Guide/GuideBookCreateFinallyStep";
 import BookMark from "../pages/BookMark/BookMark";
 import BookMarkSelect from "../pages/BookMark/BookMarkSelect";
 import MyGuideBooks from "../pages/Guide/MyGuideBooks";
 import MyGuideBookDetail from "../pages/Guide/MyGuideBookDetail";
+import GuideBookCreate from "../pages/Guide/GuideBookCreate";
 
 const AppRouter = () => {
   return (
@@ -26,8 +25,8 @@ const AppRouter = () => {
             <Route path=":id" element={<Content />} />
           </Route>
           <Route path="guidebook">
-            <Route path="create/first-step" element={<GuideBookCreateFirstStep />} />
-            <Route path="create/second-step" element={<GuideBookCreateSecondStep />} />
+            <Route path="create/first-step" element={<GuideBookCreate />} />
+            <Route path="create/first-step" element={<GuideBookCreate />} />
             <Route path="create/finally-step" element={<GuideBookCreateFinallyStep />} />
             <Route path="select" element={<BookMarkSelect />} />
           </Route>

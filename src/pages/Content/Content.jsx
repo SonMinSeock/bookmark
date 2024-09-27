@@ -129,7 +129,6 @@ const Content = () => {
   const token = useSelector((state) => state.auth.token);
   const [overview, setOverview] = useState(null); // 상세 데이터를 저장할 state 추가
   const [loading, setLoading] = useState(true); // 로딩 상태 추가
-  const [showFullTitle, setShowFullTitle] = useState(false);
 
   const content = location.state?.content; // location.state로 전달된 content 데이터를 받음
 

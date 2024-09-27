@@ -38,6 +38,7 @@ export const DateBox = styled.div`
   background-color: #f0f0f0;
   border-radius: 8px;
   color: #aaa;
+  cursor: pointer;
 `;
 
 export const DateDisplay = styled.div`
@@ -46,7 +47,6 @@ export const DateDisplay = styled.div`
   padding: 12px;
   border-radius: 8px;
   color: #aaa;
-  cursor: pointer;
 `;
 
 export const TagContainer = styled.div`

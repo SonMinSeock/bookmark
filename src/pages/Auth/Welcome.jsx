@@ -1,5 +1,6 @@
 import { useNavigate, Link } from "react-router-dom";
 import styled from "styled-components";
+import logo from "../../assets/logo.png"; // 로고 이미지 파일 import
 
 // 컨테이너
 const Container = styled.div`
@@ -22,16 +23,11 @@ const LogoSection = styled.section`
 const Logo = styled.div`
   width: 200px;
   height: 200px;
-  background-color: #e0e0e0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background-image: url(${logo}); // 로고 이미지 설정
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
   margin-bottom: 20px;
-`;
-
-const LogoText = styled.p`
-  font-size: 24px;
-  color: #000;
 `;
 
 // 로그인 링크 섹션
@@ -78,9 +74,7 @@ const Welcome = () => {
   return (
     <Container>
       <LogoSection>
-        <Logo>
-          <LogoText>로고</LogoText>
-        </Logo>
+        <Logo />
       </LogoSection>
       <LinkSection>
         <LoginLinkText>
@@ -89,7 +83,6 @@ const Welcome = () => {
         <Button variant="start" onClick={() => handleNavigate("/signup")}>
           시작하기
         </Button>
-        <Button variant="line">LINE 간편로그인</Button>
       </LinkSection>
     </Container>
   );
