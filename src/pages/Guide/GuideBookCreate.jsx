@@ -1,6 +1,5 @@
 import styled from "styled-components";
 import { FaCalendarAlt } from "react-icons/fa";
-import { IoChevronBackOutline } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { DateRange } from "react-date-range";
@@ -9,6 +8,7 @@ import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
 import { useSelector } from "react-redux";
 import { DateDisplay } from "../../styles/HomeStyles";
+import { IoIosArrowBack } from "react-icons/io";
 
 // 컨테이너 스타일
 const Container = styled.div`
@@ -25,6 +25,7 @@ const Container = styled.div`
 const Header = styled.header`
   display: flex;
   align-items: center;
+  width: 100%;
   padding-bottom: 16px;
 `;
 
@@ -36,7 +37,7 @@ const Title = styled.h1`
 `;
 
 // 뒤로가기 버튼 스타일
-const BackButton = styled.button`
+const BackButton = styled.div`
   background: none;
   border: none;
   font-size: 24px;
@@ -184,8 +185,8 @@ const GuideBookCreate = () => {
   return (
     <Container>
       <Header>
-        <BackButton onClick={() => navigate(-1)}>
-          <IoChevronBackOutline />
+        <BackButton>
+          <IoIosArrowBack size={28} onClick={() => navigate(-1)} />
         </BackButton>
       </Header>
       <Title>
