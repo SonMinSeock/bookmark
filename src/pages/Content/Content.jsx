@@ -23,7 +23,7 @@ const Header = styled.header`
   padding-bottom: 16px;
 `;
 
-const BackButton = styled.button`
+const BackButton = styled.div`
   background: none;
   border: none;
   font-size: 24px;
@@ -270,8 +270,8 @@ const Content = () => {
   return (
     <Container>
       <Header>
-        <BackButton onClick={() => navigate(-1)}>
-          <IoChevronBackOutline />
+        <BackButton>
+          <IoChevronBackOutline size={28} onClick={() => navigate(-1)} />
         </BackButton>
       </Header>
       <ImagePlaceholder>

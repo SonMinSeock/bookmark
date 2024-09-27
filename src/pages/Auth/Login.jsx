@@ -75,7 +75,7 @@ const PasswordInput = styled(Input)`
   padding-right: 40px;
 `;
 
-const TogglePasswordButton = styled.button`
+const TogglePasswordButton = styled.div`
   position: absolute;
   top: 45px;
   right: 10px;
@@ -196,8 +196,8 @@ const Login = () => {
               $hasError={passwordError}
             />
             {passwordError && <ErrorMessage>비밀번호를 다시 입력해주세요.</ErrorMessage>}
-            <TogglePasswordButton type="button" onClick={() => setPasswordVisible(!passwordVisible)}>
-              {passwordVisible ? <IoEyeOffOutline /> : <IoEyeOutline />}
+            <TogglePasswordButton onClick={() => setPasswordVisible(!passwordVisible)}>
+              {passwordVisible ? <IoEyeOffOutline size={18} /> : <IoEyeOutline size={18} />}
             </TogglePasswordButton>
           </PasswordInputContainer>
         </div>

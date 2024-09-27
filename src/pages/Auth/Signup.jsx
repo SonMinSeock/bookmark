@@ -75,7 +75,7 @@ const PasswordInput = styled(Input)`
   padding-right: 40px;
 `;
 
-const TogglePasswordButton = styled.button`
+const TogglePasswordButton = styled.div`
   position: absolute;
   top: 45px;
   right: 10px;
@@ -230,8 +230,8 @@ const Signup = () => {
               onChange={onChangePassword}
               $hasError={passwordError}
             />
-            <TogglePasswordButton type="button" onClick={() => setPasswordVisible(!passwordVisible)}>
-              {passwordVisible ? <IoEyeOffOutline /> : <IoEyeOutline />}
+            <TogglePasswordButton onClick={() => setPasswordVisible(!passwordVisible)}>
+              {passwordVisible ? <IoEyeOffOutline size={18} /> : <IoEyeOutline size={18} />}
             </TogglePasswordButton>
             <HelperText className={passwordError ? "error" : null}>
               영문과 숫자를 조합하여 8-20자 사이로 입력해주세요.
