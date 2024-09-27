@@ -338,7 +338,7 @@ const Home = () => {
 
       {showScrollToTop && (
         <ScrollToTopButton onClick={handleScrollToTop}>
-          <FaArrowUp />
+          <FaArrowUp size={26} />
         </ScrollToTopButton>
       )}
 

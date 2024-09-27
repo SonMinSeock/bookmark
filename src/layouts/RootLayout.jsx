@@ -58,7 +58,7 @@ const FloatingAddButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 30px;
+  /* font-size: 30px; */
   cursor: pointer;
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
   z-index: 1500; /* Scroll to top button보다 위에 위치 */
@@ -99,7 +99,7 @@ const RootLayout = () => {
       <Outlet />
       {!isGuidebookCreatePath && (
         <FloatingAddButton onClick={() => handleNavigate("/guidebook/create/first-step")}>
-          <IoMdAdd />
+          <IoMdAdd size={30} />
         </FloatingAddButton>
       )}
       {showNavBar && (

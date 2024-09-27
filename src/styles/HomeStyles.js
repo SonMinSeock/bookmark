@@ -201,7 +201,7 @@ export const ScrollToTopButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
+  /* font-size: 20px; */
   cursor: pointer;
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
   z-index: 1400; /* 플러스 버튼 바로 아래에 위치 */
