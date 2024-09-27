@@ -199,13 +199,13 @@ const GuideBookCreateFinallyStep = () => {
     }
   };
 
-  useEffect(() => {
-    if (!userId || !token) {
-      // 로그인하지 않은 경우 welcome 페이지로 리다이렉트
-      navigate("/welcome");
-      return;
-    }
-  }, [userId, token, navigate]);
+  // useEffect(() => {
+  //   if (!userId || !token) {
+  //     // 로그인하지 않은 경우 welcome 페이지로 리다이렉트
+  //     navigate("/welcome");
+  //     return;
+  //   }
+  // }, [userId, token, navigate]);
 
   return (
     <DndProvider backend={HTML5Backend}>

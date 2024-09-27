@@ -175,11 +175,11 @@ const GuideBookCreate = () => {
     return "0000.00.00";
   };
 
-  useEffect(() => {
-    if (!userId || !token) {
-      navigate("/welcome");
-    }
-  }, [userId, token, navigate]);
+  // useEffect(() => {
+  //   if (!userId || !token) {
+  //     navigate("/welcome");
+  //   }
+  // }, [userId, token, navigate]);
 
   return (
     <Container>
