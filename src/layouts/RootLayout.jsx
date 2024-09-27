@@ -1,8 +1,9 @@
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { FaRegBookmark, FaBookmark, FaBookOpen, FaPlus } from "react-icons/fa";
+import { FaRegBookmark, FaBookmark, FaBookOpen } from "react-icons/fa";
 // import { IoIosAddCircleOutline } from "react-icons/io";
 import { IoHomeOutline, IoHomeSharp } from "react-icons/io5";
+import { IoMdAdd } from "react-icons/io";
 
 const LayoutContainer = styled.div`
   height: ${(props) => (props.$fullHeight ? props.$fullHeight : null)};
@@ -98,7 +99,7 @@ const RootLayout = () => {
       <Outlet />
       {!isGuidebookCreatePath && (
         <FloatingAddButton onClick={() => handleNavigate("/guidebook/create/first-step")}>
-          <FaPlus />
+          <IoMdAdd />
         </FloatingAddButton>
       )}
       {showNavBar && (
