@@ -11,7 +11,7 @@ export async function fetchTravelData(areaCode, tagType, page = 1) {
     const pageParam = `&pageNo=${page}`; // 페이지 번호를 추가
 
     const response = await fetch(
-      `http://apis.data.go.kr/B551011/JpnService1/areaBasedList1?serviceKey=${apiConfig.apiKey}&numOfRows=10${pageParam}&MobileOS=ETC&MobileApp=AppTest&listYN=Y&arrange=A${areaCodeParam}${typeParam}&_type=json`
+      `https://apis.data.go.kr/B551011/JpnService1/areaBasedList1?serviceKey=${apiConfig.apiKey}&numOfRows=10${pageParam}&MobileOS=ETC&MobileApp=AppTest&listYN=Y&arrange=A${areaCodeParam}${typeParam}&_type=json`
     );
 
     const res = await response.json();
@@ -42,7 +42,7 @@ export async function fetchFestivalData(areaCode, startDate, endDate, page = 1) 
 
   try {
     const response = await fetch(
-      `http://apis.data.go.kr/B551011/JpnService1/searchFestival1?serviceKey=${apiConfig.apiKey}&numOfRows=10${pageParam}&MobileOS=ETC&MobileApp=AppTest&listYN=Y&arrange=A${areaCodeParam}${startDateParam}${endDateParam}&_type=json`
+      `https://apis.data.go.kr/B551011/JpnService1/searchFestival1?serviceKey=${apiConfig.apiKey}&numOfRows=10${pageParam}&MobileOS=ETC&MobileApp=AppTest&listYN=Y&arrange=A${areaCodeParam}${startDateParam}${endDateParam}&_type=json`
     );
 
     const res = await response.json();
@@ -67,7 +67,7 @@ export async function fetchContentDetail(contentId) {
 
   try {
     const response = await fetch(
-      `http://apis.data.go.kr/B551011/JpnService1/detailCommon1?serviceKey=${apiConfig.apiKey}&numOfRows=10&pageNo=1&MobileOS=ETC&MobileApp=AppTest&contentId=${contentId}&overviewYN=Y&_type=json`
+      `https://apis.data.go.kr/B551011/JpnService1/detailCommon1?serviceKey=${apiConfig.apiKey}&numOfRows=10&pageNo=1&MobileOS=ETC&MobileApp=AppTest&contentId=${contentId}&overviewYN=Y&_type=json`
     );
 
     const res = await response.json();
