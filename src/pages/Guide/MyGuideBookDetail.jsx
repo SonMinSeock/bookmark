@@ -8,7 +8,7 @@ import { TouchBackend } from "react-dnd-touch-backend";
 import { isMobile } from "react-device-detect"; // react-device-detect 사용
 import DraggableBox from "../../components/DragDrop/DraggableBox";
 import DroppableContainer from "../../components/DragDrop/DroppableContainer";
-import { updateGuidebookDaysApi } from "../../api/backendApi";
+import { fetchGuideBookDetail, updateGuidebookDaysApi } from "../../api/backendApi";
 
 // 스타일링 추가
 const Container = styled.div`
@@ -102,18 +102,38 @@ const MyGuideBookDetail = () => {
     if (sourceDayIndex === targetDayIndex && sourceIndex === targetIndex) return;
 
     const updatedDays = [...guidebook.days];
-    const sourceContentIds = [...updatedDays[sourceDayIndex].contentIds];
-    const [movedItem] = sourceContentIds.splice(sourceIndex, 1);
+    const sourceBookmarks = [...updatedDays[sourceDayIndex].bookmarks];
+    const [movedItem] = sourceBookmarks.splice(sourceIndex, 1);
 
     if (sourceDayIndex === targetDayIndex) {
-      sourceContentIds.splice(targetIndex, 0, movedItem);
-      updatedDays[sourceDayIndex].contentIds = sourceContentIds;
+      sourceBookmarks.splice(targetIndex, 0, movedItem);
+      updatedDays[sourceDayIndex].bookmarks = sourceBookmarks;
     } else {
-      const targetContentIds = [...updatedDays[targetDayIndex].contentIds];
-      targetContentIds.splice(targetIndex, 0, movedItem);
-      updatedDays[sourceDayIndex].contentIds = sourceContentIds;
-      updatedDays[targetDayIndex].contentIds = targetContentIds;
+      const targetBookmarks = [...updatedDays[targetDayIndex].bookmarks];
+      targetBookmarks.splice(targetIndex, 0, movedItem);
+      updatedDays[sourceDayIndex].bookmarks = sourceBookmarks;
+      updatedDays[targetDayIndex].bookmarks = targetBookmarks;
     }
+
+    setGuidebook({
+      ...guidebook,
+      days: updatedDays,
+    });
+    setIsModified(true); // 수정된 상태로 변경
+  };
+
+  const handleDelete = (dayIndex, bookmarkId, e) => {
+    e.stopPropagation();
+
+    const updatedDays = guidebook.days.map((day, index) => {
+      if (index === dayIndex) {
+        return {
+          ...day,
+          bookmarks: day.bookmarks.filter((bookmark) => bookmark.id !== bookmarkId),
+        };
+      }
+      return day;
+    });
 
     setGuidebook({
       ...guidebook,
@@ -124,43 +144,23 @@ const MyGuideBookDetail = () => {
     setIsModified(true);
   };
 
-  const handleDelete = (dayIndex, contentId, e) => {
-    e.stopPropagation();
-
-    const newDays = guidebook.days.map((day) => ({
-      ...day,
-      contentIds: day.contentIds.filter((id) => id !== contentId),
-    }));
-
-    setGuidebook({
-      ...guidebook,
-      days: newDays,
-    });
-
-    // 데이터가 수정된 상태로 설정 (수정 버튼 활성화)
-    setIsModified(true);
-  };
-
   const handleSave = async () => {
     setIsSaving(true);
     const daysData = guidebook.days.map((day) => ({
       dayNumber: day.dayNumber,
-      contentIds: day.contentIds,
+      bookmarkIds: day.bookmarks.map((bookmark) => bookmark.id), // 각 day의 bookmark ID만 추출
     }));
 
-    console.log("Saving data to the backend:", daysData);
-
     try {
-      // 여기에 실제 백엔드 API 호출을 추가합니다.
+      // 일정 저장을 위한 API 호출
       await updateGuidebookDaysApi(guidebook.id, daysData, token);
-      console.log("백엔드로 업데이트 성공");
-      alert("수정사항이 저장되었습니다!");
-      setIsModified(false); // 저장이 완료되면 버튼 비활성화
+      alert("일정이 성공적으로 저장되었습니다!");
+      setIsModified(false); // 저장 완료 후 수정된 상태를 해제
     } catch (error) {
-      console.error("저장 실패:", error);
-      alert("저장에 실패했습니다.");
+      console.error("일정 저장 실패:", error);
+      alert("일정 저장에 실패했습니다.");
     } finally {
-      setIsSaving(false); // 저장 완료 상태로 변경
+      setIsSaving(false); // 저장 중 상태 해제
     }
   };
 
@@ -172,11 +172,30 @@ const MyGuideBookDetail = () => {
     }
   }, [userId, token, navigate]);
 
+  useEffect(() => {
+    if (!userId || !token) {
+      navigate("/welcome");
+      return;
+    }
+
+    const fetchGuideBook = async () => {
+      try {
+        const fetchedGuidebook = await fetchGuideBookDetail(id, token); // API 호출로 가이드북 데이터 가져오기
+        console.log("상세 : ", fetchedGuidebook);
+        setGuidebook(fetchedGuidebook); // 가져온 데이터 상태에 저장
+      } catch (error) {
+        console.error("가이드북 로드 실패", error);
+      }
+    };
+
+    fetchGuideBook();
+  }, [id, userId, token, navigate]);
+
   return (
     <DndProvider backend={backend}>
       <Container>
         <Title>{guidebook.title || "제목 없음"}</Title>
-        <Subtitle>{guidebook.area || guidebook.destination || "지역 없음"}</Subtitle>
+        <Subtitle>{guidebook.destination || "지역 없음"}</Subtitle>
         <DateRange>
           {guidebook.startDate
             ? `${new Date(guidebook.startDate).toLocaleDateString()} ~ ${new Date(
@@ -185,16 +204,16 @@ const MyGuideBookDetail = () => {
             : "0000.00.00~0000.00.00"}
         </DateRange>
         <Divider />
-        {guidebook.days.map((day, dayIndex) => (
+        {guidebook.days?.map((day, dayIndex) => (
           <DayContainer key={dayIndex}>
             <DayTitle>Day {day.dayNumber}</DayTitle>
             <ScheduleWrapper>
               <DroppableContainer day={day} dayIndex={dayIndex} moveContent={moveContent}>
-                {day.contentIds.length > 0 ? (
-                  day.contentIds.map((contentId, index) => (
+                {day.bookmarks.length > 0 ? (
+                  day.bookmarks.map((bookmark, index) => (
                     <DraggableBox
-                      key={contentId}
-                      contentId={contentId}
+                      key={bookmark.id}
+                      bookmark={bookmark} // 북마크 객체 전체를 전달
                       index={index}
                       moveContent={moveContent}
                       dayIndex={dayIndex}

@@ -97,28 +97,6 @@ const Description = styled.p`
   margin: 16px 0;
 `;
 
-// 전체 타이틀 보여주기 위한 Modal 스타일
-const ModalBackdrop = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-`;
-
-const ModalContent = styled.div`
-  background: white;
-  padding: 16px;
-  border-radius: 8px;
-  max-width: 90%;
-  text-align: center;
-`;
-
 const Content = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -134,6 +112,7 @@ const Content = () => {
 
   // 상세 조회 API에서 overview만 받아오기
   useEffect(() => {
+    console.log("북마크 상세 content: ", content);
     if (content?.contentid) {
       const loadOverview = async () => {
         setLoading(true);
@@ -160,19 +139,10 @@ const Content = () => {
       return;
     }
 
-    // API 호출하여 overview 데이터를 가져옴
-    let overview = "";
-    try {
-      const detailData = await fetchContentDetail(guide.contentid); // 상세 조회 API 호출
-      overview = detailData?.overview || "상세내용 없음"; // overview 값 설정
-    } catch (error) {
-      console.error("상세 조회 API 호출 실패:", error);
-    }
-
     // 백엔드로 보낼 데이터 구성
     const bookmarkData = {
       userId, // 현재 로그인된 사용자 ID
-      contentid: guide.contentid, // 콘텐츠 ID
+      contentId: guide.contentid, // 콘텐츠 ID
       title: guide.title || "제목 없음", // 제목
       firstimage: guide.firstimage || "", // 첫 번째 이미지 URL (없으면 빈 문자열)
       firstimage2: guide.firstimage2 || "", // 두 번째 이미지 URL (없으면 빈 문자열)
@@ -188,28 +158,16 @@ const Content = () => {
     console.log("백엔드로 보낼 북마크 데이터:", bookmarkData);
 
     try {
-      if (bookmarks.some((item) => item.contentid === guide.contentid)) {
+      if (bookmarks.some((item) => item.contentId === guide.contentid)) {
         // 북마크 삭제 로직
-        dispatch(removeBookmark(guide.contentid));
-
-        // 나중에 사용할 백엔드 호출 (주석 처리)
-        /*
         await removeBookmarkApi(userId, guide.contentid, token); // API로 북마크 삭제 요청
+        dispatch(removeBookmark(guide.contentid));
         console.log("북마크 삭제 성공");
-        */
-
-        console.log("북마크 삭제 로컬 상태 업데이트 성공");
       } else {
         // 북마크 추가 로직
+        await addBookmarkApi(bookmarkData, token); // API로 북마크 추가 요청
         dispatch(addBookmark(guide));
-
-        // 나중에 사용할 백엔드 호출 (주석 처리)
-        /*
-        await addBookmarkApi(userId, bookmarkData, token); // API로 북마크 추가 요청
         console.log("북마크 추가 성공");
-        */
-
-        console.log("북마크 추가 로컬 상태 업데이트 성공");
       }
     } catch (error) {
       console.error("북마크 처리 실패:", error);
@@ -281,7 +239,7 @@ const Content = () => {
         <Title>{content?.title || "제목 없음"}</Title>
 
         <BookmarkSpan>
-          {bookmarks.some((item) => item.contentid === content.contentid) ? (
+          {bookmarks.some((item) => item.contentId === content.contentid) ? (
             <FaBookmark size={20} className="bookmark-icon selected" onClick={() => handleBookmarkClick(content)} />
           ) : (
             <FaRegBookmark size={20} className="bookmark-icon" onClick={() => handleBookmarkClick(content)} />

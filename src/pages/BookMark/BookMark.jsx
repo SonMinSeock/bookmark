@@ -49,7 +49,7 @@ const BookMark = () => {
   const navigate = useNavigate(); // navigate 함수 사용
 
   const handleClick = (content) => {
-    navigate(`/contents/${content.contentid}`, { state: { content } });
+    navigate(`/contents/${content.contentId}`, { state: { content } });
   };
 
   console.log(bookmarks);

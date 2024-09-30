@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import noImage from "../../assets/noimage.png";
-import { fetchGuideBooksByUser } from "../../api/backendApi"; // API 호출 함수 임포트
+import { deleteGuideBookApi, fetchGuideBooksByUser } from "../../api/backendApi"; // API 호출 함수 임포트
 import { setGuideBooks } from "../../redux/guideBookSlice"; // 리덕스 액션 임포트
 
 const Container = styled.div`
@@ -69,6 +69,22 @@ const NoGuidebooksMessage = styled.div`
   line-height: 24px;
 `;
 
+const DeleteButton = styled.button`
+  background-color: #ff6b6b;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 8px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  margin-top: 1rem;
+  margin-left: 8px;
+
+  &:hover {
+    background-color: #ff4e4e;
+  }
+`;
+
 const MyGuideBooks = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -97,19 +113,36 @@ const MyGuideBooks = () => {
     };
 
     loadGuideBooks();
-  }, [dispatch, userId]);
+  }, [dispatch, userId, token, navigate]);
 
   const handleNavigate = (id) => {
     navigate(`/myGuideBooks/${id}`);
   };
 
   const getFirstImage = (days) => {
-    for (let day of days) {
-      if (day.contentIds.length > 0) {
-        return day.contentIds[0].firstimage || noImage; // 첫 번째 이미지가 있으면 반환, 없으면 대체 이미지
+    if (days && days.length > 0) {
+      for (let day of days) {
+        if (day.bookmarks && day.bookmarks.length > 0) {
+          return day.bookmarks[0].firstimage || noImage; // 첫 번째 이미지가 있으면 반환, 없으면 대체 이미지
+        }
       }
     }
-    return noImage;
+    return noImage; // days가 없으면 기본 이미지 반환
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm("정말로 이 가이드북을 삭제하시겠습니까?")) {
+      try {
+        await deleteGuideBookApi(id, token); // 가이드북 삭제 API 호출
+        alert("가이드북이 삭제되었습니다.");
+        // 삭제 후 가이드북 리스트를 다시 불러옵니다
+        const updatedGuideBooks = await fetchGuideBooksByUser(userId, token);
+        dispatch(setGuideBooks(updatedGuideBooks)); // Redux 상태 업데이트
+      } catch (error) {
+        console.error("가이드북 삭제 실패", error);
+        alert("가이드북 삭제에 실패했습니다.");
+      }
+    }
   };
 
   return (
@@ -128,6 +161,15 @@ const MyGuideBooks = () => {
                 {guidebook.destination}, {new Date(guidebook.startDate).toLocaleDateString()} ~{" "}
                 {new Date(guidebook.endDate).toLocaleDateString()}
               </GuideSubtitle>
+              {/* 삭제 버튼 추가 */}
+              <DeleteButton
+                onClick={(e) => {
+                  e.stopPropagation(); // 가이드북 클릭 이벤트 전파 방지
+                  handleDelete(guidebook.id);
+                }}
+              >
+                삭제
+              </DeleteButton>
             </GuideInfo>
           </GuideBookContainer>
         ))

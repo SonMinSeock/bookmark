@@ -6,7 +6,7 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import DraggableBox from "../../components/DragDrop/DraggableBox";
 import DroppableContainer from "../../components/DragDrop/DroppableContainer";
-import { createGuideBookApi } from "../../api/backendApi";
+import { createGuideBookApi, updateGuidebookDaysApi } from "../../api/backendApi"; // 일정 추가 API도 import
 import { useSelector } from "react-redux";
 
 const Container = styled.div`
@@ -35,9 +35,6 @@ const Subtitle = styled.p`
   color: #555;
   font-weight: bold;
   margin-bottom: 4px;
-  &:last-child {
-    margin-top: 6px;
-  }
 `;
 
 const Divider = styled.hr`
@@ -114,7 +111,6 @@ const GuideBookCreateFinallyStep = () => {
   };
 
   const days = calculateDays(dateRange.startDate, dateRange.endDate);
-
   const [schedule, setSchedule] = useState(previousSchedule || Object.fromEntries(days.map((day) => [day, []])));
   const [isModified, setIsModified] = useState(false);
 
@@ -179,6 +175,7 @@ const GuideBookCreateFinallyStep = () => {
     setIsModified(true);
   };
 
+  // 가이드북 생성 및 일정 저장 함수
   const handleCreateGuideBook = async () => {
     const newGuideBook = {
       userId,
@@ -186,26 +183,33 @@ const GuideBookCreateFinallyStep = () => {
       destination: area,
       startDate: dateRange.startDate,
       endDate: dateRange.endDate,
-      schedule,
     };
 
     try {
-      const response = await createGuideBookApi(newGuideBook, token);
+      // 1. 가이드북 생성 API 호출
+      const { data: guidebookId } = await createGuideBookApi(newGuideBook, token);
+      console.log("가이드북 ID:", guidebookId);
+
+      // 2. 일정 데이터 준비
+      const daysToUpdate = days.map((day, index) => ({
+        dayNumber: index + 1,
+
+        bookmarkIds: schedule[day].map((bookmark) => bookmark.id),
+      }));
+
+      console.log("일정 데이터:", daysToUpdate);
+
+      // 3. 가이드북 일정 추가 API 호출
+      await updateGuidebookDaysApi(guidebookId, daysToUpdate, token);
+
+      // 4. 성공 메시지 및 페이지 이동
       alert("가이드북이 성공적으로 생성되었습니다!");
       navigate("/myGuideBooks");
     } catch (error) {
+      console.error("가이드북 생성 및 일정 저장 실패:", error);
       alert("가이드북 생성에 실패했습니다.");
-      console.error(error);
     }
   };
-
-  // useEffect(() => {
-  //   if (!userId || !token) {
-  //     // 로그인하지 않은 경우 welcome 페이지로 리다이렉트
-  //     navigate("/welcome");
-  //     return;
-  //   }
-  // }, [userId, token, navigate]);
 
   return (
     <DndProvider backend={HTML5Backend}>

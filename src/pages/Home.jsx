@@ -166,11 +166,10 @@ const Home = () => {
       console.error("상세 조회 API 호출 실패:", error);
     }
 
-    console.log("HandleBookmark 핸들러 북마크 할 data 확인 : ", guide);
     // 백엔드로 보낼 데이터 구성
     const bookmarkData = {
       userId, // 현재 로그인된 사용자 ID
-      contentid: guide.contentid, // 콘텐츠 ID
+      contentId: guide.contentid, // 콘텐츠 ID
       title: guide.title || "제목 없음", // 제목
       firstimage: guide.firstimage || "", // 첫 번째 이미지 URL (없으면 빈 문자열)
       firstimage2: guide.firstimage2 || "", // 두 번째 이미지 URL (없으면 빈 문자열)
@@ -183,31 +182,22 @@ const Home = () => {
       overview, // 상세 조회 API에서 가져온 overview
     };
 
-    console.log("백엔드로 보낼 북마크 데이터:", bookmarkData);
-
     try {
-      if (bookmarks.some((item) => item.contentid === guide.contentid)) {
+      if (bookmarks.some((item) => item.contentId === guide.contentid)) {
+        console.log("guide content id 삭제 : ", guide.contentid);
         // 북마크 삭제 로직
-        dispatch(removeBookmark(guide.contentid));
+        console.log("북마크 삭제요청");
 
-        // 나중에 사용할 백엔드 호출 (주석 처리)
-        /*
         await removeBookmarkApi(userId, guide.contentid, token); // API로 북마크 삭제 요청
-        console.log("북마크 삭제 성공");
-        */
 
-        console.log("북마크 삭제 로컬 상태 업데이트 성공");
+        dispatch(removeBookmark(guide.contentid)); // Redux 상태에서 삭제
+
+        console.log("북마크 삭제 성공");
       } else {
         // 북마크 추가 로직
-        dispatch(addBookmark(guide));
-
-        // 나중에 사용할 백엔드 호출 (주석 처리)
-        /*
-        await addBookmarkApi(userId, bookmarkData, token); // API로 북마크 추가 요청
+        await addBookmarkApi(bookmarkData, token); // API로 북마크 추가 요청
+        dispatch(addBookmark(guide)); // Redux 상태에 추가
         console.log("북마크 추가 성공");
-        */
-
-        console.log("북마크 추가 로컬 상태 업데이트 성공");
       }
     } catch (error) {
       console.error("북마크 처리 실패:", error);
@@ -219,8 +209,6 @@ const Home = () => {
   };
 
   // 3. useEffect 정의
-
-  console.log(userId, token);
   useEffect(() => {
     // 페이지 로드 시 스크롤을 상단으로 초기화
     window.scrollTo(0, 0);
@@ -234,14 +222,12 @@ const Home = () => {
       }
 
       try {
-        const bookmarkContentIds = await fetchBookmarks(userId, token); // API로 북마크 조회
+        const bookmarkList = await fetchBookmarks(userId, token); // API로 북마크 조회
         dispatch(resetBookmarks()); // 기존 북마크 초기화
 
-        bookmarkContentIds.forEach((contentId) => {
-          const bookmarkDetail = displayedTravels.find((item) => item.contentid === contentId.contentId);
-          if (bookmarkDetail) {
-            dispatch(addBookmark(bookmarkDetail));
-          }
+        // 북마크 리스트에서 개별 데이터를 addBookmark로 추가
+        bookmarkList.forEach((bookmark) => {
+          dispatch(addBookmark(bookmark)); // 북마크를 Redux에 추가
         });
       } catch (error) {
         console.error("Error loading bookmarks:", error);
@@ -250,7 +236,7 @@ const Home = () => {
 
     // 페이지 이동 시마다 북마크 불러오기
     loadBookmarks();
-  }, [location, dispatch, userId, token, displayedTravels]);
+  }, [location, dispatch, userId, token]);
 
   // 디바운스 함수 정의
   const debounce = (func, delay) => {
@@ -310,8 +296,6 @@ const Home = () => {
       }
     }
   }, [page, travels, festivalData, selectedTag]);
-
-  console.log(bookmarks);
 
   return (
     <Container>
@@ -437,7 +421,7 @@ const Home = () => {
             </ImagePlaceholder>
             <ContentHeader>
               <Title>{content.title}</Title>
-              {bookmarks.some((item) => item.contentid === content.contentid) ? (
+              {bookmarks.some((item) => item.contentId === content.contentid) ? (
                 <FaBookmark size={20} className="bookmark-icon selected" onClick={() => handleBookmarkClick(content)} />
               ) : (
                 <FaRegBookmark size={20} className="bookmark-icon" onClick={() => handleBookmarkClick(content)} />

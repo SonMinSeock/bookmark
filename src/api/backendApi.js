@@ -123,7 +123,6 @@ export const signupUser = async (userData) => {
 
 // 북마크 조회 API (더미 데이터 사용)
 export const fetchBookmarks = async (userId, token) => {
-  // 실제 백엔드 호출 주석 처리
   try {
     const response = await fetch(`${API_URL}/api/bookmark/${userId}`, {
       headers: {
@@ -134,55 +133,30 @@ export const fetchBookmarks = async (userId, token) => {
       throw new Error("Failed to fetch bookmarks");
     }
     const { data } = await response.json();
-    console.log(data);
-    return data; // API로부터 받은 북마크 contentid 리스트 반환
+    console.log("fetchBookmarks API : ", data);
+    return data; // API로부터 받은 북마크 리스트 반환
   } catch (error) {
     console.error("Error fetching bookmarks:", error);
     return []; // 에러 발생 시 빈 배열 반환
   }
-
-  // 더미 데이터 반환 (테스트용)
-  // return new Promise((resolve) => {
-  //   setTimeout(() => {
-  //     resolve([]); // 더미 contentid 리스트
-  //   }, 500);
-  // });
 };
 
 // 북마크 추가 API (더미 데이터 사용)
-export const addBookmarkApi = async (userId, contentId, token) => {
+export const addBookmarkApi = async (bookmarkData, token) => {
   try {
-    // 실제 백엔드 호출 주석 처리
-    // const formData = new FormData();
-
-    // formData.append("userId", userId);
-    // formData.append("contentId", contentId);
-
-    console.log(token);
     const response = await fetch(`${API_URL}/api/bookmark/add`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: token,
       },
-      body: JSON.stringify({
-        userId: userId,
-        contentId: contentId,
-      }),
+      body: JSON.stringify(bookmarkData),
     });
     if (!response.ok) {
       throw new Error("Failed to add bookmark");
     }
     const data = await response.json();
     return data;
-
-    // 더미 데이터로 북마크 추가 처리
-    // return new Promise((resolve) => {
-    //   setTimeout(() => {
-    //     console.log(`북마크 추가 (더미): userId: ${userId}, contentId: ${contentId}`);
-    //     resolve({ success: true });
-    //   }, 500);
-    // });
   } catch (error) {
     console.error("Error adding bookmark:", error);
     throw error;
@@ -254,57 +228,49 @@ export const createGuideBookApi = async (guideBookData, token) => {
 
 // 가이드북 조회 API (더미 데이터 사용)
 export const fetchGuideBooksByUser = async (userId, token) => {
-  // 실제 백엔드 호출 주석 처리
-
   try {
-    const response = await fetch(`${API_URL}/api/guidebook/user/${userId}`, {
+    const response = await fetch(`${API_URL}/api/guidebook/${userId}`, {
+      method: "GET",
       headers: {
-        Authorization: token,
+        Authorization: token, // JWT 토큰을 헤더에 포함
+        "Content-Type": "application/json",
       },
     });
 
     if (!response.ok) {
-      throw new Error("Failed to fetch guidebooks");
+      throw new Error("가이드북 조회 실패");
     }
-    const data = await response.json();
-    console.log("가이드북 조회 : ", data);
+
+    const { data } = await response.json();
+    console.log("가이드북 목록 조회 응답 데이터:", data);
+    return data; // 응답 JSON에서 'data' 필드를 반환
+  } catch (error) {
+    console.error("가이드북 목록 조회 에러:", error);
+    throw error;
+  }
+};
+
+// 가이드 북 상세 조회 API
+export const fetchGuideBookDetail = async (guidebookId, token) => {
+  try {
+    const response = await fetch(`${API_URL}/api/guidebook/${guidebookId}/full`, {
+      method: "GET",
+      headers: {
+        Authorization: token,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("가이드북 조회 실패");
+    }
+
+    const { data } = await response.json();
     return data;
   } catch (error) {
-    console.error("Error fetching guidebooks:", error);
-    return []; // 에러 발생 시 빈 배열 반환
+    console.error("가이드북 상세 조회 실패", error);
+    throw error;
   }
-
-  // 더미 데이터 반환 (테스트용)
-  // return new Promise((resolve) => {
-  //   setTimeout(() => {
-  //     resolve([
-  //       {
-  //         id: 1,
-  //         userId,
-  //         title: "Jeju Island Trip",
-  //         destination: "Jeju Island",
-  //         startDate: "2024-09-15",
-  //         endDate: "2024-09-20",
-  //         days: [
-  //           { dayNumber: 1, contentIds: ["123456", "789012"] },
-  //           { dayNumber: 2, contentIds: ["345678"] },
-  //         ],
-  //       },
-  //       {
-  //         id: 2,
-  //         userId,
-  //         title: "Seoul City Tour",
-  //         destination: "Seoul",
-  //         startDate: "2024-10-01",
-  //         endDate: "2024-10-03",
-  //         days: [
-  //           { dayNumber: 1, contentIds: [] },
-  //           { dayNumber: 2, contentIds: ["123456", "789012"] },
-  //         ],
-  //       },
-  //     ]);
-  //   }, 500);
-  // });
 };
 
 //가이드북 일정 변경 API 호출
@@ -326,6 +292,28 @@ export const updateGuidebookDaysApi = async (guidebookId, days, token) => {
     return await response.json();
   } catch (error) {
     console.error("Error updating guidebook days", error);
+    throw error;
+  }
+};
+
+// 가이드북 삭제 API
+export const deleteGuideBookApi = async (guidebookId, token) => {
+  try {
+    const response = await fetch(`${API_URL}/api/guidebook/${guidebookId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: token,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("가이드북 삭제 실패");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error deleting guidebook", error);
     throw error;
   }
 };
